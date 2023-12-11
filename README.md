@@ -22,12 +22,9 @@ samples, guidance on mobile development, and a full API reference.
 We use Firebase hosting to serve the app. For first time setup instructions see [here](https://docs.flutter.dev/deployment/web#deploying-to-firebase-hosting).
 
 ```
-# Build Flutter app and deploy to Firebase hosting
-# This calls `flutter build web --release` so you don't have to
-firebase deploy
-```
+# Build Flutter app
+flutter build web --release --no-tree-shake-icons
 
-If you just want to build the app but not deploy:
-```
-flutter build web --release
+# Deploy to Firebase Hosting
+firebase deploy
 ```
