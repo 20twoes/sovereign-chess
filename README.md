@@ -30,10 +30,18 @@ flutter run
 
 We use Firebase hosting to serve the app. For first time setup instructions see [here](https://docs.flutter.dev/deployment/web#deploying-to-firebase-hosting).
 
+The public directory is set to `~/build/web`.
+
 ```
 # Build Flutter app
 flutter build web --release --no-tree-shake-icons
 
 # Deploy to Firebase Hosting
 firebase deploy
+```
+
+To test the build, you can run a web server locally. For example:
+```
+cd build/web
+python -m http.server 8000
 ```
