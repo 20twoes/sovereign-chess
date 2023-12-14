@@ -17,6 +17,15 @@ For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 
+## Development
+
+```
+# Start app for local development
+flutter run
+
+# Then choose Chrome (2) as the target
+```
+
 ## Deploy
 
 We use Firebase hosting to serve the app. For first time setup instructions see [here](https://docs.flutter.dev/deployment/web#deploying-to-firebase-hosting).
