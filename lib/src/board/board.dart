@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../fen.dart' as fen;
+import '../piece.dart' as plib;
+import '../square_key.dart';
 import 'config.dart';
 import 'types.dart';
 
@@ -26,10 +29,12 @@ class Board extends StatelessWidget {
       }
     };
 
+    final pieces = fen.read(fen.initialFEN);
+
     for (final (rankIndex, rank) in ranks.reversed.indexed) {
       for (var (fileIndex, file) in files.indexed) {
         final name = '${file}${rank}';
-        Piece? piece = pieces[name];
+        plib.Piece? piece = pieces[name];
 
         list.add(SquareNode(
           name: name,
@@ -53,7 +58,7 @@ const textStyle = TextStyle(
 class SquareNode extends StatefulWidget {
   final String color;
   final String name;
-  Piece? piece;
+  plib.Piece? piece;
   final GlobalKey dragKey;
 
   SquareNode({
@@ -80,7 +85,7 @@ class _SquareNodeState extends State<SquareNode> {
   }
 
   Widget _buildSquareNode(Color? bgColor) {
-    return DragTarget<Piece>(
+    return DragTarget<plib.Piece>(
       builder: (BuildContext context, List<dynamic> accepted, List<dynamic> rejected) {
         return Container(
           child: Column(
@@ -97,7 +102,7 @@ class _SquareNodeState extends State<SquareNode> {
           ),
         );
       },
-      onAccept: (Piece piece) {
+      onAccept: (plib.Piece piece) {
         print(piece.role);
         setState(() {
           widget.piece = piece;
@@ -114,7 +119,7 @@ class _SquareNodeState extends State<SquareNode> {
             widget.name,
             style: textStyle,
           ),
-          Draggable<Piece>(
+          Draggable<plib.Piece>(
             data: widget.piece,
             dragAnchorStrategy: pointerDragAnchorStrategy,
             maxSimultaneousDrags: 1,
@@ -134,6 +139,7 @@ class _SquareNodeState extends State<SquareNode> {
                 style: TextStyle(
                   color: pieceColors[widget.piece?.color],
                   decoration: TextDecoration.none,
+                  fontSize: 24,
                 ),
               ),
             ),
@@ -150,7 +156,7 @@ class _SquareNodeState extends State<SquareNode> {
 
 class DraggingPiece extends StatelessWidget {
   final GlobalKey dragKey;
-  final Piece? piece;
+  final plib.Piece? piece;
 
   const DraggingPiece({
     super.key,
@@ -165,6 +171,7 @@ class DraggingPiece extends StatelessWidget {
       style: TextStyle(
         color: pieceColors[piece?.color],
         decoration: TextDecoration.none,
+        fontSize: 24,
       ),
     );
   }
