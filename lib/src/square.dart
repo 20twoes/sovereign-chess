@@ -1,52 +1,22 @@
 import 'package:flutter/material.dart';
 
-import '../fen.dart' as fen;
-import '../piece.dart' as plib;
-import '../square_key.dart';
 import 'config.dart';
-import 'types.dart';
+import 'piece.dart' as plib;
 
-class Board extends StatelessWidget {
-  final GlobalKey _draggableKey = GlobalKey();
-
-  Board({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return GridView.count(
-      crossAxisCount: files.length,
-      children: _generateSquares(),
-    );
-  }
-
-  List<Widget> _generateSquares() {
-    List<Widget> list = [];
-    final getColor = (r, c) {
-      if (c % 2 != 0) {
-        return r % 2 == 0 ? 'dark' : 'light';
-      } else {
-        return r % 2 == 0 ? 'light' : 'dark';
-      }
-    };
-
-    final pieces = fen.read(fen.initialFEN);
-
-    for (final (rankIndex, rank) in ranks.reversed.indexed) {
-      for (var (fileIndex, file) in files.indexed) {
-        final name = '${file}${rank}';
-        plib.Piece? piece = pieces[name];
-
-        list.add(SquareNode(
-          name: name,
-          color: getColor(rankIndex, fileIndex),
-          piece: piece,
-          dragKey: _draggableKey,
-        ));
-      }
-    }
-    return list;
-  }
-}
+final pieceColors = {
+  plib.Color.white: colors.whitePiece,
+  plib.Color.black: colors.blackPiece,
+  plib.Color.ash: colors.ashPiece,
+  plib.Color.slate: colors.slatePiece,
+  plib.Color.pink: colors.pinkPiece,
+  plib.Color.red: colors.redPiece,
+  plib.Color.orange: colors.orangePiece,
+  plib.Color.yellow: colors.yellowPiece,
+  plib.Color.green: colors.greenPiece,
+  plib.Color.cyan: colors.cyanPiece,
+  plib.Color.navy: colors.navyPiece,
+  plib.Color.violet: colors.violetPiece,
+};
 
 const textStyle = TextStyle(
   color: Colors.pinkAccent,
@@ -56,10 +26,11 @@ const textStyle = TextStyle(
 );
 
 class SquareNode extends StatefulWidget {
-  final String color;
+  final Color? color;
   final String name;
   plib.Piece? piece;
   final GlobalKey dragKey;
+  final void Function() onChange;
 
   SquareNode({
     super.key,
@@ -67,6 +38,7 @@ class SquareNode extends StatefulWidget {
     required this.name,
     this.piece,
     required this.dragKey,
+    required this.onChange,
   });
 
   @override
@@ -76,15 +48,10 @@ class SquareNode extends StatefulWidget {
 class _SquareNodeState extends State<SquareNode> {
   @override
   Widget build(BuildContext context) {
-    Color? bgColor = getSquareColor(widget.name);
-    if (bgColor == null) {
-      bgColor = widget.color == 'dark' ? colors.darkSquare : colors.lightSquare;
-    }
-
-    return widget.piece == null ? _buildSquareNode(bgColor) : _buildPieceNode(bgColor);
+    return widget.piece == null ? _buildSquareNode() : _buildPieceNode();
   }
 
-  Widget _buildSquareNode(Color? bgColor) {
+  Widget _buildSquareNode() {
     return DragTarget<plib.Piece>(
       builder: (BuildContext context, List<dynamic> accepted, List<dynamic> rejected) {
         return Container(
@@ -98,7 +65,7 @@ class _SquareNodeState extends State<SquareNode> {
           ),
           decoration: BoxDecoration(
             border: Border.all(width: 0.0, color: Colors.black26),
-            color: bgColor,
+            color: widget.color,
           ),
         );
       },
@@ -111,7 +78,7 @@ class _SquareNodeState extends State<SquareNode> {
     );
   }
 
-  Widget _buildPieceNode(Color? bgColor) {
+  Widget _buildPieceNode() {
     return Container(
       child: Column(
         children: [
@@ -127,6 +94,7 @@ class _SquareNodeState extends State<SquareNode> {
               setState(() {
                 widget.piece = null;
               });
+              widget.onChange();
             },
             feedback: DraggingPiece(
               dragKey: widget.dragKey,
@@ -148,7 +116,7 @@ class _SquareNodeState extends State<SquareNode> {
       ),
       decoration: BoxDecoration(
         border: Border.all(width: 0.0, color: Colors.black26),
-        color: bgColor,
+        color: widget.color,
       ),
     );
   }

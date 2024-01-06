@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'board/board.dart';
+import 'board.dart';
 
-export 'board/board.dart';
+export 'board.dart';
