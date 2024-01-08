@@ -8,7 +8,7 @@ class FENTokenIteratorException implements Exception {}
 
 const FEN initialFEN = 'aqabvrvnbrbnbbbqbkbbbnbrynyrsbsq/aranvpvpbpbpbpbpbpbpbpbpypypsnsr/nbnp12opob/nqnp12opoq/crcp12rprr/cncp12rprn/gbgp12pppb/gqgp12pppq/yqyp12vpvq/ybyp12vpvb/onop12npnn/orop12npnr/rqrp12cpcq/rbrp12cpcb/srsnppppwpwpwpwpwpwpwpwpgpgpanar/sqsbprpnwrwnwbwqwkwbwnwrgngrabaq';
 
-const colorMap = {
+const letterToColors = {
   'a': Color.ash,
   'b': Color.black,
   'c': Color.cyan,
@@ -23,7 +23,22 @@ const colorMap = {
   'y': Color.yellow,
 };
 
-const roleMap = {
+const colorToLetters = {
+  Color.ash: 'a',
+  Color.black: 'b',
+  Color.cyan: 'c',
+  Color.green: 'g',
+  Color.navy: 'n',
+  Color.orange: 'o',
+  Color.pink: 'p',
+  Color.red: 'r',
+  Color.slate: 's',
+  Color.violet: 'v',
+  Color.white: 'w',
+  Color.yellow: 'y',
+};
+
+const letterToRoles = {
   'b': Role.bishop,
   'k': Role.king,
   'n': Role.knight,
@@ -31,6 +46,19 @@ const roleMap = {
   'q': Role.queen,
   'r': Role.rook,
 };
+
+const roleToLetters = {
+  Role.bishop: 'b',
+  Role.king: 'k',
+  Role.knight: 'n',
+  Role.pawn: 'p',
+  Role.queen: 'q',
+  Role.rook: 'r',
+};
+
+String getPieceKey(Piece piece) {
+  return colorToLetters[piece.color]! + roleToLetters[piece.role]!;
+}
 
 final startIndex = -2;
 const chunkLength = 2;
@@ -57,8 +85,8 @@ class FENTokenIterator implements Iterator<String> {
 }
 
 Piece parse(String token) {
-  final color = colorMap[token[0]];
-  final role = roleMap[token[1]];
+  final color = letterToColors[token[0]];
+  final role = letterToRoles[token[1]];
 
   if (color == null || role == null) {
     throw InvalidFENException();
@@ -97,4 +125,17 @@ Pieces read(FEN fen) {
   }
 
   return pieces;
+}
+
+FEN write(Pieces pieces) {
+  final rows = ranks.reversed.map((rank) {
+    final tokens = files.map((file) {
+      final piece = pieces[file + rank];
+      return piece != null ? getPieceKey(piece) : '1';
+    });
+    return tokens.join('').splitMapJoin(RegExp(r'1+'),
+      onMatch: (m) => '${m[0]!.length}'.padLeft(2, '0'),
+    );
+  });
+  return rows.join('/');
 }

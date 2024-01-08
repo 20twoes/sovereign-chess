@@ -39,4 +39,25 @@ void main() {
       expect(iter.moveNext(), false);
     });
   });
+
+  group('FEN write', () {
+    test('should return FEN string', () {
+      final pieces = {
+        'a16': Piece(color: Color.ash, role: Role.queen),
+      };
+      final result = fen.write(pieces);
+      expect(result, 'aq15/16/16/16/16/16/16/16/16/16/16/16/16/16/16/16');
+    });
+    test('should work for random squares', () {
+      final pieces = {
+        'a15': Piece(color: Color.white, role: Role.rook),
+        'c13': Piece(color: Color.white, role: Role.rook),
+        'e13': Piece(color: Color.white, role: Role.rook),
+        'k8': Piece(color: Color.pink, role: Role.bishop),
+        'p1': Piece(color: Color.navy, role: Role.pawn),
+      };
+      final result = fen.write(pieces);
+      expect(result, '16/wr15/16/02wr01wr11/16/16/16/16/10pb05/16/16/16/16/16/16/15np');
+    });
+  });
 }

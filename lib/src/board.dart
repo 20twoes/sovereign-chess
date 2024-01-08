@@ -6,7 +6,7 @@ import 'config.dart';
 import 'fen.dart' as fen;
 import 'piece.dart' as plib;
 import 'square.dart';
-import 'square_key.dart';
+import 'square_key.dart' as sk;
 
 final coloredSquares = {
   'h9': colors.whiteSquare,
@@ -62,11 +62,19 @@ class _BoardState extends State<Board> {
   final _channel = WebSocketChannel.connect(
     Uri.parse('ws://localhost:3000'),
   );
+  plib.Pieces _pieces = fen.read(fen.initialFEN);
+  sk.Key? _movingSquare;
+
+  @override
+  void initState() {
+    super.initState();
+    _channel.stream.listen(_handleMessage);
+  }
 
   @override
   Widget build(BuildContext context) {
     return GridView.count(
-      crossAxisCount: files.length,
+      crossAxisCount: sk.files.length,
       children: _generateSquares(),
     );
   }
@@ -74,32 +82,53 @@ class _BoardState extends State<Board> {
   List<Widget> _generateSquares() {
     List<Widget> list = [];
 
-    final pieces = fen.read(fen.initialFEN);
-
-    for (final (rankIndex, rank) in ranks.reversed.indexed) {
-      for (var (fileIndex, file) in files.indexed) {
+    for (final (rankIndex, rank) in sk.ranks.reversed.indexed) {
+      for (var (fileIndex, file) in sk.files.indexed) {
         final name = '${file}${rank}';
-        plib.Piece? piece = pieces[name];
+        plib.Piece? piece = _pieces[name];
 
         list.add(SquareNode(
           name: name,
           color: getBackgroundColor(rankIndex, fileIndex, name),
           piece: piece,
           dragKey: _draggableKey,
-          onChange: _handlePieceMove,
+          onMoveCompleted: _handleMoveCompleted,
+          onMoveStarted: _handleMoveStarted,
         ));
       }
     }
     return list;
   }
 
-  void _handlePieceMove() {
-    _channel.sink.add('test send');
+  void _handleMoveStarted(sk.Key squareKey) {
+    setState(() {
+      _movingSquare = squareKey;
+    });
+  }
+
+  void _handleMoveCompleted(plib.Piece piece, sk.Key squareKey) {
+    setState(() {
+      _pieces.remove(_movingSquare);
+      _pieces[squareKey] = piece;
+      final newFEN = fen.write(_pieces);
+      print('$piece from $_movingSquare to $squareKey');
+      print('Updated FEN: $newFEN');
+      _channel.sink.add(newFEN);
+    });
+  }
+
+  void _handleMessage(message) {
+    // TODO: Consider using StreamBuilder to have the UI automatically update
+    // in response to incoming messages
+    print('message received: $message');
+    setState(() {
+      _pieces = fen.read(message);
+    });
   }
 
   @override
   void dispose() {
-    _channel.sink.close();
+    _channel.sink.close(status.goingAway);
     super.dispose();
   }
 }

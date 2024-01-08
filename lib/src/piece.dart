@@ -36,4 +36,6 @@ class Piece {
 
   @override
   operator ==(o) => o is Piece && o.color == color && o.role == role;
+
+  String toString() => '${color.name} ${role.name}'.toUpperCase();
 }

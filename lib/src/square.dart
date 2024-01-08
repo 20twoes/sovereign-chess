@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'config.dart';
 import 'piece.dart' as plib;
+import 'square_key.dart' as sk;
 
 final pieceColors = {
   plib.Color.white: colors.whitePiece,
@@ -18,19 +19,13 @@ final pieceColors = {
   plib.Color.violet: colors.violetPiece,
 };
 
-const textStyle = TextStyle(
-  color: Colors.pinkAccent,
-  decoration: TextDecoration.none,
-  fontSize: 10,
-  fontWeight: FontWeight.normal,
-);
-
 class SquareNode extends StatefulWidget {
   final Color? color;
-  final String name;
+  final sk.Key name;
   plib.Piece? piece;
   final GlobalKey dragKey;
-  final void Function() onChange;
+  final void Function(plib.Piece, sk.Key) onMoveCompleted;
+  final void Function(sk.Key) onMoveStarted;
 
   SquareNode({
     super.key,
@@ -38,7 +33,8 @@ class SquareNode extends StatefulWidget {
     required this.name,
     this.piece,
     required this.dragKey,
-    required this.onChange,
+    required this.onMoveCompleted,
+    required this.onMoveStarted,
   });
 
   @override
@@ -57,10 +53,7 @@ class _SquareNodeState extends State<SquareNode> {
         return Container(
           child: Column(
             children: [
-              Text(
-                widget.name,
-                style: textStyle,
-              ),
+              _Label(name: widget.name),
             ],
           ),
           decoration: BoxDecoration(
@@ -70,10 +63,7 @@ class _SquareNodeState extends State<SquareNode> {
         );
       },
       onAccept: (plib.Piece piece) {
-        print(piece.role);
-        setState(() {
-          widget.piece = piece;
-        });
+        _handleMoveCompleted(piece);
       },
     );
   }
@@ -82,34 +72,19 @@ class _SquareNodeState extends State<SquareNode> {
     return Container(
       child: Column(
         children: [
-          Text(
-            widget.name,
-            style: textStyle,
-          ),
+          _Label(name: widget.name),
           Draggable<plib.Piece>(
             data: widget.piece,
             dragAnchorStrategy: pointerDragAnchorStrategy,
             maxSimultaneousDrags: 1,
-            onDragCompleted: () {
-              setState(() {
-                widget.piece = null;
-              });
-              widget.onChange();
-            },
-            feedback: DraggingPiece(
+            onDragStarted: _handleDragStarted,
+            feedback: _DraggingPiece(
               dragKey: widget.dragKey,
               piece: widget.piece,
             ),
             childWhenDragging: Text(' '),
-            child: Center(
-              child: Text(
-                '${widget.piece?.name}',
-                style: TextStyle(
-                  color: pieceColors[widget.piece?.color],
-                  decoration: TextDecoration.none,
-                  fontSize: 24,
-                ),
-              ),
+            child: Container(
+              child: _PieceWidget(piece: widget.piece),
             ),
           ),
         ],
@@ -120,13 +95,69 @@ class _SquareNodeState extends State<SquareNode> {
       ),
     );
   }
+
+  void _handleDragStarted() {
+    //print('${widget.piece} started moving from ${widget.name}');
+    widget.onMoveStarted(widget.name);
+  }
+
+  void _handleMoveCompleted(plib.Piece piece) {
+    //print('$piece moved to ${widget.name}');
+    setState(() {
+      widget.piece = piece;
+    });
+    widget.onMoveCompleted(piece, widget.name);
+  }
 }
 
-class DraggingPiece extends StatelessWidget {
+class _Label extends StatelessWidget {
+  final String name;
+
+  _Label({super.key, required this.name});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      name,
+      style: TextStyle(
+        color: Colors.pinkAccent,
+        decoration: TextDecoration.none,
+        fontSize: 10,
+        fontWeight: FontWeight.normal,
+      ),
+    );
+  }
+}
+
+class _PieceWidget extends StatelessWidget {
+  final plib.Piece? piece;
+
+  _PieceWidget({
+    super.key,
+    this.piece,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FittedBox(
+      fit: BoxFit.contain,
+      child: Text(
+        '${piece?.name}',
+        style: TextStyle(
+          color: pieceColors[piece?.color],
+          decoration: TextDecoration.none,
+          fontSize: 24.0,
+        ),
+      ),
+    );
+  }
+}
+
+class _DraggingPiece extends StatelessWidget {
   final GlobalKey dragKey;
   final plib.Piece? piece;
 
-  const DraggingPiece({
+  const _DraggingPiece({
     super.key,
     required this.dragKey,
     required this.piece,
@@ -134,13 +165,6 @@ class DraggingPiece extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      '${piece?.name}',
-      style: TextStyle(
-        color: pieceColors[piece?.color],
-        decoration: TextDecoration.none,
-        fontSize: 24,
-      ),
-    );
+    return _PieceWidget(piece: piece);
   }
 }
