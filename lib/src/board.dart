@@ -60,7 +60,7 @@ class Board extends StatefulWidget {
 class _BoardState extends State<Board> {
   final GlobalKey _draggableKey = GlobalKey();
   final _channel = WebSocketChannel.connect(
-    Uri.parse('ws://localhost:3000'),
+    Uri.parse(const String.fromEnvironment('WS_URI', defaultValue: 'http://127.0.0.1:3000')),
   );
   plib.Pieces _pieces = fen.read(fen.initialFEN);
   sk.Key? _movingSquare;
