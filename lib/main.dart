@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 
 import 'src/game.dart';
 
+const squareSizeMin = 48.0;
+const squareSizeMax = 72.0;
+const numSquares = 16;
+const boardSizeMin = squareSizeMin * numSquares;
+const boardSizeMax = squareSizeMax * numSquares;
+
 void main() {
   runApp(const MyApp());
 }
@@ -35,7 +41,15 @@ class MyApp extends StatelessWidget {
       ),
       //home: const MyHomePage(title: 'Flutter Demo Home Page'),
       home: Center(
-        child: Board(),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            minWidth: boardSizeMin,
+            minHeight: boardSizeMin,
+            maxWidth: boardSizeMax,
+            maxHeight: boardSizeMax,
+          ),
+          child: Board(),
+        ),
       ),
     );
   }

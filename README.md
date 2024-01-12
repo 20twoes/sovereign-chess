@@ -21,7 +21,7 @@ samples, guidance on mobile development, and a full API reference.
 
 ```
 # Start app for local development
-flutter run --dart-define=WS_URI=ws://207.246.125.58/
+flutter run --dart-define=WS_URI=wss://207.246.125.58/
 
 # Then choose Chrome (2) as the target
 ```
@@ -34,7 +34,7 @@ The public directory is set to `~/build/web`.
 
 ```
 # Build Flutter app
-flutter build web --release --no-tree-shake-icons --dart-define=WS_URI=ws://207.246.125.58/
+flutter build web --release --no-tree-shake-icons --dart-define=WS_URI=wss://207.246.125.58/
 
 # Deploy to Firebase Hosting
 firebase deploy

@@ -44,16 +44,28 @@ class SquareNode extends StatefulWidget {
 class _SquareNodeState extends State<SquareNode> {
   @override
   Widget build(BuildContext context) {
-    return widget.piece == null ? _buildSquareNode() : _buildPieceNode();
-  }
-
-  Widget _buildSquareNode() {
     return DragTarget<plib.Piece>(
       builder: (BuildContext context, List<dynamic> accepted, List<dynamic> rejected) {
         return Container(
-          child: Column(
+          child: Stack(
             children: [
               _Label(name: widget.name),
+              if (widget.piece != null) Positioned.fill(
+                child: Draggable<plib.Piece>(
+                  data: widget.piece,
+                  dragAnchorStrategy: pointerDragAnchorStrategy,
+                  maxSimultaneousDrags: 1,
+                  onDragStarted: _handleDragStarted,
+                  feedback: _DraggingPiece(
+                    dragKey: widget.dragKey,
+                    piece: widget.piece,
+                  ),
+                  childWhenDragging: Text(' '),
+                  child: Container(
+                    child: _PieceWidget(piece: widget.piece),
+                  ),
+                ),
+              ),
             ],
           ),
           decoration: BoxDecoration(
@@ -65,34 +77,6 @@ class _SquareNodeState extends State<SquareNode> {
       onAccept: (plib.Piece piece) {
         _handleMoveCompleted(piece);
       },
-    );
-  }
-
-  Widget _buildPieceNode() {
-    return Container(
-      child: Column(
-        children: [
-          _Label(name: widget.name),
-          Draggable<plib.Piece>(
-            data: widget.piece,
-            dragAnchorStrategy: pointerDragAnchorStrategy,
-            maxSimultaneousDrags: 1,
-            onDragStarted: _handleDragStarted,
-            feedback: _DraggingPiece(
-              dragKey: widget.dragKey,
-              piece: widget.piece,
-            ),
-            childWhenDragging: Text(' '),
-            child: Container(
-              child: _PieceWidget(piece: widget.piece),
-            ),
-          ),
-        ],
-      ),
-      decoration: BoxDecoration(
-        border: Border.all(width: 0.0, color: Colors.black26),
-        color: widget.color,
-      ),
     );
   }
 
@@ -146,7 +130,6 @@ class _PieceWidget extends StatelessWidget {
         style: TextStyle(
           color: pieceColors[piece?.color],
           decoration: TextDecoration.none,
-          fontSize: 24.0,
         ),
       ),
     );
