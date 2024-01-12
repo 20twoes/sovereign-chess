@@ -73,13 +73,10 @@ class _BoardState extends State<Board> {
 
   @override
   Widget build(BuildContext context) {
-    return InteractiveViewer(
-      minScale: 1,
-      maxScale: 3,
-      child: GridView.count(
-        crossAxisCount: sk.files.length,
-        children: _generateSquares(),
-      ),
+    return GridView.count(
+      crossAxisCount: sk.files.length,
+      scrollDirection: Axis.horizontal,
+      children: _generateSquares(),
     );
   }
 
