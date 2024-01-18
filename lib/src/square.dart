@@ -4,23 +4,8 @@ import 'config.dart';
 import 'piece.dart' as plib;
 import 'square_key.dart' as sk;
 
-final pieceColors = {
-  plib.Color.white: colors.whitePiece,
-  plib.Color.black: colors.blackPiece,
-  plib.Color.ash: colors.ashPiece,
-  plib.Color.slate: colors.slatePiece,
-  plib.Color.pink: colors.pinkPiece,
-  plib.Color.red: colors.redPiece,
-  plib.Color.orange: colors.orangePiece,
-  plib.Color.yellow: colors.yellowPiece,
-  plib.Color.green: colors.greenPiece,
-  plib.Color.cyan: colors.cyanPiece,
-  plib.Color.navy: colors.navyPiece,
-  plib.Color.violet: colors.violetPiece,
-};
-
 class SquareNode extends StatefulWidget {
-  final Color? color;
+  final Color color;
   final sk.Key name;
   plib.Piece? piece;
   final GlobalKey dragKey;
@@ -123,16 +108,8 @@ class _PieceWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FittedBox(
-      fit: BoxFit.contain,
-      child: Text(
-        '${piece?.name}',
-        style: TextStyle(
-          color: pieceColors[piece?.color],
-          decoration: TextDecoration.none,
-        ),
-      ),
-    );
+    final pieceRenderer = plib.PieceRenderer(piece as plib.Piece);
+    return pieceRenderer.asWidget();
   }
 }
 

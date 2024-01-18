@@ -35,8 +35,7 @@ final coloredSquares = {
   'i11': colors.violetSquare,
 };
 
-// TODO: Not sure how to make this return type Color and not Color?
-Color? getBackgroundColor(row, col, name) {
+Color getBackgroundColor(row, col, name) {
   var bgColor = coloredSquares[name];
 
   if (bgColor == null) {
@@ -47,7 +46,7 @@ Color? getBackgroundColor(row, col, name) {
     }
   }
 
-  return bgColor;
+  return bgColor as Color;
 }
 
 class Board extends StatefulWidget {
@@ -75,7 +74,6 @@ class _BoardState extends State<Board> {
   Widget build(BuildContext context) {
     return GridView.count(
       crossAxisCount: sk.files.length,
-      scrollDirection: Axis.horizontal,
       children: _generateSquares(),
     );
   }
