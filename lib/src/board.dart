@@ -59,7 +59,7 @@ class Board extends StatefulWidget {
 class _BoardState extends State<Board> {
   final GlobalKey _draggableKey = GlobalKey();
   final _channel = WebSocketChannel.connect(
-    Uri.parse(const String.fromEnvironment('WS_URI', defaultValue: 'http://127.0.0.1:3000')),
+    Uri.parse(const String.fromEnvironment('WS_URI', defaultValue: 'ws://127.0.0.1:3000/ws')),
   );
   plib.Pieces _pieces = fen.read(fen.initialFEN);
   sk.Key? _movingSquare;
@@ -72,6 +72,7 @@ class _BoardState extends State<Board> {
 
   @override
   Widget build(BuildContext context) {
+    print("WS_URI=${const String.fromEnvironment('WS_URI')}");
     return GridView.count(
       crossAxisCount: sk.files.length,
       children: _generateSquares(),
