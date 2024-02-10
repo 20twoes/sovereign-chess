@@ -10,18 +10,44 @@ typedef Games = List<Game>;
 
 class Game {
   final String id;
+  List<Move> moves;
 
   Game({
     required this.id,
+    required this.moves,
   });
 
   factory Game.fromJson(Map<String, dynamic> json) {
     return switch (json) {
       {
         'pid': String id,
+        'moves': List<dynamic> moves,
       } =>
-        Game(id: id),
+        Game(
+          id: id,
+          moves: [for (var move in moves) Move.fromJson(move)],
+        ),
       _ => throw const FormatException('Failed to load game.'),
+    };
+  }
+
+  String get fen => moves.last.fen;
+}
+
+class Move {
+  final String fen;
+  final int ply;
+
+  Move({required this.fen, required this.ply});
+
+  factory Move.fromJson(Map<String, dynamic> json) {
+    return switch (json) {
+      {
+        'fen': String fen,
+        'ply': int ply,
+      } =>
+        Move(fen: fen, ply: ply),
+      _ => throw const FormatException('Failed to load move'),
     };
   }
 }

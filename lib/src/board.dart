@@ -72,7 +72,6 @@ class _BoardState extends State<Board> {
 
   @override
   Widget build(BuildContext context) {
-    print("WS_URI=${const String.fromEnvironment('WS_URI')}");
     return GridView.count(
       crossAxisCount: sk.files.length,
       children: _generateSquares(),
@@ -128,7 +127,7 @@ class _BoardState extends State<Board> {
 
   @override
   void dispose() {
-    _channel.sink.close(status.goingAway);
+    _channel.sink.close(status.normalClosure);
     super.dispose();
   }
 }
