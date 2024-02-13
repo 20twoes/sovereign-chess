@@ -74,7 +74,7 @@ class GameRouterDelegate extends RouterDelegate<GameRoutePath>
   with ChangeNotifier, PopNavigatorRouterDelegateMixin<GameRoutePath> {
     final GlobalKey<NavigatorState> navigatorKey;
 
-  Game? _selectedGame;
+  GameForList? _selectedGame;
   bool show404 = false;
 
   GameRouterDelegate() : navigatorKey = GlobalKey<NavigatorState>();
@@ -137,14 +137,14 @@ class GameRouterDelegate extends RouterDelegate<GameRoutePath>
     show404 = false;
   }
 
-  void _handleGameTapped(Game game) {
+  void _handleGameTapped(GameForList game) {
     _selectedGame = game;
     notifyListeners();
   }
 }
 
 class GameDetailsPage extends Page {
-  final Game? game;
+  final GameForList? game;
 
   GameDetailsPage({
     required this.game,
@@ -176,7 +176,7 @@ class GameRoutePath {
 }
 
 class GamesListScreen extends StatefulWidget {
-  final ValueChanged<Game> onTapped;
+  final ValueChanged<GameForList> onTapped;
 
   const GamesListScreen({super.key, required this.onTapped});
 
@@ -185,7 +185,7 @@ class GamesListScreen extends StatefulWidget {
 }
 
 class _GamesListScreenState extends State<GamesListScreen> {
-  late Future<Games> _futureGames;
+  late Future<List<GameForList>> _futureGames;
 
   @override
   void initState() {
@@ -208,15 +208,15 @@ class _GamesListScreenState extends State<GamesListScreen> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text('Sovereign Chess'),
       ),
-      body: FutureBuilder<Games>(
+      body: FutureBuilder<List<GameForList>>(
         future: _futureGames,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return ListView(
               children: [
                 for (var game in snapshot.data!)
-                  ListTile(
-                    title: Text(game.id),
+                  GestureDetector(
+                    child: GameListItem(game),
                     onTap: () => widget.onTapped(game),
                   )
               ],
@@ -237,8 +237,31 @@ class _GamesListScreenState extends State<GamesListScreen> {
   }
 }
 
+class GameListItem extends StatelessWidget {
+  final GameForList game;
+
+  GameListItem(this.game);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: StaticBoard(fenStr: game.fen),
+          ),
+          Expanded(
+            child: Text(game.id),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class GameDetailsScreen extends StatelessWidget {
-  final Game? game;
+  final GameForList? game;
 
   GameDetailsScreen({
     this.game,

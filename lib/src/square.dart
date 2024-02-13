@@ -4,6 +4,34 @@ import 'config.dart';
 import 'piece.dart' as plib;
 import 'square_key.dart' as sk;
 
+class StaticSquareNode extends StatelessWidget {
+  final Color color;
+  plib.Piece? piece;
+
+  StaticSquareNode({
+    super.key,
+    required this.color,
+    this.piece,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: SizedBox(
+        width: 10,
+        height: 10,
+        child: piece != null
+          ? _PieceWidget(piece: piece)
+          : null,
+      ),
+      decoration: BoxDecoration(
+        border: Border.all(width: 0.0, color: Colors.black26),
+        color: color,
+      ),
+    );
+  }
+}
+
 class SquareNode extends StatefulWidget {
   final Color color;
   final sk.Key name;

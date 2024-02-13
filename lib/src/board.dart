@@ -49,6 +49,73 @@ Color getBackgroundColor(row, col, name) {
   return bgColor as Color;
 }
 
+class StaticBoard extends StatelessWidget {
+  final String fenStr;
+  late plib.Pieces _pieces;
+
+  StaticBoard({super.key, required this.fenStr}) {
+    _pieces = fen.read(fenStr);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    List<Widget> squares = _generateSquares();
+    List<List<Widget>> files = _splitIntoFiles(squares);
+
+    return Row(
+      children: <Widget>[
+        for (final file in files)
+        Column(
+          children: file.reversed.toList(),
+        ),
+      ],
+    );
+  }
+
+  List<Widget> _generateSquares() {
+    List<Widget> squares = [];
+    var isLightColorSquare = false;
+
+    Color getColor(String key) {
+      final color = isLightColorSquare ? colors.lightSquare : colors.darkSquare;
+      return color as Color;
+    }
+
+    final lastRank = sk.rowLength.toString();
+
+    for (final key in sk.allKeys) {
+      plib.Piece? piece = _pieces[key];
+      Color color = coloredSquares[key] ?? getColor(key);
+
+      // When we get to the end of a file, don't change colors
+      if (!key.endsWith(lastRank)) {
+        isLightColorSquare = !isLightColorSquare;
+      }
+
+      squares.add(StaticSquareNode(
+        color: color,
+        piece: piece,
+      ));
+    }
+
+    return squares;
+  }
+
+  List<List<Widget>> _splitIntoFiles(List<Widget> squares) {
+    List<Widget> copy = List.from(squares);
+    var files = <List<Widget>>[];
+    final colLen = sk.rowLength;
+
+    while (copy.length > 0) {
+      Iterable<Widget> file = copy.take(colLen);
+      files.add(file.toList());
+      copy.removeRange(0, colLen);
+    }
+
+    return files;
+  }
+}
+
 class Board extends StatefulWidget {
   Board({super.key});
 
