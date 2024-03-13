@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:web_socket_channel/status.dart' as status;
+import 'package:web_socket_channel/web_socket_channel.dart';
 
+import 'src/fen.dart' as fen;
 import 'src/game.dart';
 
 void main() {
@@ -260,30 +263,62 @@ class GameListItem extends StatelessWidget {
   }
 }
 
-class GameDetailsScreen extends StatelessWidget {
+class GameDetailsScreen extends StatefulWidget {
   final GameForList? game;
 
   GameDetailsScreen({
+    super.key,
     this.game,
   });
+
+  @override
+  State<GameDetailsScreen> createState() => _GameDetailsScreenState();
+}
+
+const WS_URI = String.fromEnvironment('WS_URI', defaultValue: 'ws://127.0.0.1:3000/ws');
+
+class _GameDetailsScreenState extends State<GameDetailsScreen> {
+  late WebSocketChannel _channel;
+  fen.FEN _fen = fen.initialFEN;
+
+  @override
+  void initState() {
+    super.initState();
+    // TODO: Handle case when game is null.  Is this case even posssible?
+    _channel = WebSocketChannel.connect(
+      Uri.parse(WS_URI + '/v0/play/' + widget.game!.id),
+    );
+    _channel.stream.listen(_handleMessage);
+  }
+
+  void _handleMessage(message) {
+    // TODO: Consider using StreamBuilder to have the UI automatically update
+    // in response to incoming messages
+    print('message received: $message');
+    setState(() {
+      _fen = message;
+    });
+  }
+
+  void _handleFENUpdate(fen.FEN newFEN) {
+    _channel.sink.add(newFEN);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: Board(),
-      //body: Padding(
-      //  padding: const EdgeInsets.all(8.0),
-      //  child: Column(
-      //    crossAxisAlignment: CrossAxisAlignment.start,
-      //    children: [
-      //      if (game != null) ...[
-      //        Text(game!.id, style: Theme.of(context).textTheme.headline6),
-      //      ],
-      //    ],
-      //  ),
-      //),
+      body: Board(
+        onPieceMove: _handleFENUpdate,
+        currentFEN: _fen,
+      ),
     );
+  }
+
+  @override
+  void dispose() {
+    _channel.sink.close(status.normalClosure);
+    super.dispose();
   }
 }
 

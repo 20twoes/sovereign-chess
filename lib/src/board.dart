@@ -117,7 +117,16 @@ class StaticBoard extends StatelessWidget {
 }
 
 class Board extends StatefulWidget {
-  Board({super.key});
+  final ValueChanged<fen.FEN> onPieceMove;
+  final fen.FEN currentFEN;
+  late plib.Pieces _pieces;
+
+  Board({
+    super.key,
+    required this.onPieceMove,
+    required this.currentFEN,
+  })
+    : _pieces = fen.read(currentFEN);
 
   @override
   State<Board> createState() => _BoardState();
@@ -125,17 +134,7 @@ class Board extends StatefulWidget {
 
 class _BoardState extends State<Board> {
   final GlobalKey _draggableKey = GlobalKey();
-  final _channel = WebSocketChannel.connect(
-    Uri.parse(const String.fromEnvironment('WS_URI', defaultValue: 'ws://127.0.0.1:3000/ws')),
-  );
-  plib.Pieces _pieces = fen.read(fen.initialFEN);
   sk.Key? _movingSquare;
-
-  @override
-  void initState() {
-    super.initState();
-    _channel.stream.listen(_handleMessage);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -151,7 +150,7 @@ class _BoardState extends State<Board> {
     for (final (rankIndex, rank) in sk.ranks.reversed.indexed) {
       for (var (fileIndex, file) in sk.files.indexed) {
         final name = '${file}${rank}';
-        plib.Piece? piece = _pieces[name];
+        plib.Piece? piece = widget._pieces[name];
 
         list.add(SquareNode(
           name: name,
@@ -174,27 +173,16 @@ class _BoardState extends State<Board> {
 
   void _handleMoveCompleted(plib.Piece piece, sk.Key squareKey) {
     setState(() {
-      _pieces.remove(_movingSquare);
-      _pieces[squareKey] = piece;
-      final newFEN = fen.write(_pieces);
+      if (_movingSquare == squareKey) {
+        print('$piece from $_movingSquare to $squareKey - same square');
+        return;
+      }
+      widget._pieces.remove(_movingSquare);
+      widget._pieces[squareKey] = piece;
+      final newFEN = fen.write(widget._pieces);
       print('$piece from $_movingSquare to $squareKey');
       print('Updated FEN: $newFEN');
-      _channel.sink.add(newFEN);
+      widget.onPieceMove(newFEN);
     });
-  }
-
-  void _handleMessage(message) {
-    // TODO: Consider using StreamBuilder to have the UI automatically update
-    // in response to incoming messages
-    print('message received: $message');
-    setState(() {
-      _pieces = fen.read(message);
-    });
-  }
-
-  @override
-  void dispose() {
-    _channel.sink.close(status.normalClosure);
-    super.dispose();
   }
 }
