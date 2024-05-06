@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 import 'board.dart';
 
 export 'board.dart';
+export 'fen.dart' show FEN;
+export 'fen.dart' show initialFEN;
 
 typedef Games = List<Game>;
 

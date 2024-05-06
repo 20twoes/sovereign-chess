@@ -23,7 +23,7 @@ samples, guidance on mobile development, and a full API reference.
 # Start app for local development
 ./bin/run.sh
 
-# Then choose Chrome (2) as the target
+# Press 'r' in the terminal process to hot reload changes to code.
 ```
 
 ## Deploy

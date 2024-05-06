@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:web_socket_channel/status.dart' as status;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import 'src/fen.dart' as fen;
-import 'src/game.dart';
+import 'src/game/game.dart' as game;
 
 void main() {
   runApp(SochessApp());
@@ -77,7 +76,7 @@ class GameRouterDelegate extends RouterDelegate<GameRoutePath>
   with ChangeNotifier, PopNavigatorRouterDelegateMixin<GameRoutePath> {
     final GlobalKey<NavigatorState> navigatorKey;
 
-  GameForList? _selectedGame;
+  game.GameForList? _selectedGame;
   bool show404 = false;
 
   GameRouterDelegate() : navigatorKey = GlobalKey<NavigatorState>();
@@ -105,7 +104,7 @@ class GameRouterDelegate extends RouterDelegate<GameRoutePath>
         if (show404)
           MaterialPage(key: ValueKey('UnknownPage'), child: UnknownScreen())
         else if (_selectedGame != null)
-          GameDetailsPage(game: _selectedGame),
+          GameDetailsPage(currentGame: _selectedGame),
       ],
       onPopPage: (route, result) {
         if (!route.didPop(result)) {
@@ -140,24 +139,24 @@ class GameRouterDelegate extends RouterDelegate<GameRoutePath>
     show404 = false;
   }
 
-  void _handleGameTapped(GameForList game) {
-    _selectedGame = game;
+  void _handleGameTapped(game.GameForList currentGame) {
+    _selectedGame = currentGame;
     notifyListeners();
   }
 }
 
 class GameDetailsPage extends Page {
-  final GameForList? game;
+  final game.GameForList? currentGame;
 
   GameDetailsPage({
-    required this.game,
-  }) : super(key: ValueKey(game));
+    required this.currentGame,
+  }) : super(key: ValueKey(currentGame));
 
   Route createRoute(BuildContext context) {
     return MaterialPageRoute(
       settings: this,
       builder: (BuildContext context) {
-        return GameDetailsScreen(game: game);
+        return GameDetailsScreen(currentGame: currentGame);
       },
     );
   }
@@ -179,7 +178,7 @@ class GameRoutePath {
 }
 
 class GamesListScreen extends StatefulWidget {
-  final ValueChanged<GameForList> onTapped;
+  final ValueChanged<game.GameForList> onTapped;
 
   const GamesListScreen({super.key, required this.onTapped});
 
@@ -188,16 +187,16 @@ class GamesListScreen extends StatefulWidget {
 }
 
 class _GamesListScreenState extends State<GamesListScreen> {
-  late Future<List<GameForList>> _futureGames;
+  late Future<List<game.GameForList>> _futureGames;
 
   @override
   void initState() {
     super.initState();
-    _futureGames = fetchGames();
+    _futureGames = game.fetchGames();
   }
 
   void _createGame() async {
-    final newGame = await createGame();
+    final newGame = await game.createGame();
     final currentGames = await _futureGames;
     // Don't need to use setState since we navigate to another page
     _futureGames = Future.value([...currentGames, newGame]);
@@ -211,16 +210,16 @@ class _GamesListScreenState extends State<GamesListScreen> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text('Sovereign Chess'),
       ),
-      body: FutureBuilder<List<GameForList>>(
+      body: FutureBuilder<List<game.GameForList>>(
         future: _futureGames,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             return ListView(
               children: [
-                for (var game in snapshot.data!)
+                for (var g in snapshot.data!)
                   GestureDetector(
-                    child: GameListItem(game),
-                    onTap: () => widget.onTapped(game),
+                    child: GameListItem(g),
+                    onTap: () => widget.onTapped(g),
                   )
               ],
             );
@@ -241,9 +240,9 @@ class _GamesListScreenState extends State<GamesListScreen> {
 }
 
 class GameListItem extends StatelessWidget {
-  final GameForList game;
+  final game.GameForList currentGame;
 
-  GameListItem(this.game);
+  GameListItem(this.currentGame);
 
   @override
   Widget build(BuildContext context) {
@@ -252,10 +251,10 @@ class GameListItem extends StatelessWidget {
       child: Row(
         children: <Widget>[
           Expanded(
-            child: StaticBoard(fenStr: game.fen),
+            child: game.StaticBoard(fenStr: currentGame.fen),
           ),
           Expanded(
-            child: Text(game.id),
+            child: Text(currentGame.id),
           ),
         ],
       ),
@@ -264,11 +263,11 @@ class GameListItem extends StatelessWidget {
 }
 
 class GameDetailsScreen extends StatefulWidget {
-  final GameForList? game;
+  final game.GameForList? currentGame;
 
   GameDetailsScreen({
     super.key,
-    this.game,
+    this.currentGame,
   });
 
   @override
@@ -279,14 +278,14 @@ const WS_URI = String.fromEnvironment('WS_URI', defaultValue: 'ws://127.0.0.1:30
 
 class _GameDetailsScreenState extends State<GameDetailsScreen> {
   late WebSocketChannel _channel;
-  fen.FEN _fen = fen.initialFEN;
+  game.FEN _fen = game.initialFEN;
 
   @override
   void initState() {
     super.initState();
     // TODO: Handle case when game is null.  Is this case even posssible?
     _channel = WebSocketChannel.connect(
-      Uri.parse(WS_URI + '/v0/play/' + widget.game!.id),
+      Uri.parse(WS_URI + '/v0/play/' + widget.currentGame!.id),
     );
     _channel.stream.listen(_handleMessage);
   }
@@ -300,7 +299,7 @@ class _GameDetailsScreenState extends State<GameDetailsScreen> {
     });
   }
 
-  void _handleFENUpdate(fen.FEN newFEN) {
+  void _handleFENUpdate(game.FEN newFEN) {
     _channel.sink.add(newFEN);
   }
 
@@ -308,7 +307,7 @@ class _GameDetailsScreenState extends State<GameDetailsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: Board(
+      body: game.Board(
         onPieceMove: _handleFENUpdate,
         currentFEN: _fen,
       ),
