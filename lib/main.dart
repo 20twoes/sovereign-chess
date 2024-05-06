@@ -104,7 +104,7 @@ class GameRouterDelegate extends RouterDelegate<GameRoutePath>
         if (show404)
           MaterialPage(key: ValueKey('UnknownPage'), child: UnknownScreen())
         else if (_selectedGame != null)
-          GameDetailsPage(currentGame: _selectedGame),
+          MaterialPage(key: ValueKey('GameDetailsPage' + _selectedGame!.id), child: GameDetailsScreen(currentGame: _selectedGame))
       ],
       onPopPage: (route, result) {
         if (!route.didPop(result)) {
@@ -142,23 +142,6 @@ class GameRouterDelegate extends RouterDelegate<GameRoutePath>
   void _handleGameTapped(game.GameForList currentGame) {
     _selectedGame = currentGame;
     notifyListeners();
-  }
-}
-
-class GameDetailsPage extends Page {
-  final game.GameForList? currentGame;
-
-  GameDetailsPage({
-    required this.currentGame,
-  }) : super(key: ValueKey(currentGame));
-
-  Route createRoute(BuildContext context) {
-    return MaterialPageRoute(
-      settings: this,
-      builder: (BuildContext context) {
-        return GameDetailsScreen(currentGame: currentGame);
-      },
-    );
   }
 }
 
