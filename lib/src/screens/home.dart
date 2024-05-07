@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../game/game.dart' show GameForList, StaticBoard, fetchGames;
 
@@ -57,7 +58,7 @@ class GameList extends StatelessWidget {
         for (var g in games)
           GestureDetector(
             child: GameListItem(g),
-            //onTap: () => widget.onTapped(g),
+            onTap: () => context.go('/play/' + g.id),
           )
       ],
     );
