@@ -1,21 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart' show Provider;
 
+import '../data/game.dart' show fetchGames;
 import '../game/game.dart' show GameForList, StaticBoard, fetchGames;
+import '../user.dart' show UserModel;
+import 'scaffold.dart' show AppScaffold;
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Sovereign Chess')),
-      body: GamesData(),
+    return const AppScaffold(
+      body: const GamesData(),
     );
   }
 }
 
 class GamesData extends StatefulWidget {
+  const GamesData({super.key});
+
   @override
   State<StatefulWidget> createState() => _GamesDataState();
 }
@@ -26,6 +31,8 @@ class _GamesDataState extends State<GamesData> {
   @override
   void initState() {
     super.initState();
+    final userId = Provider.of<UserModel>(context, listen: false).id;
+    print('user id in games: $userId');
     _futureGames = fetchGames();
   }
 

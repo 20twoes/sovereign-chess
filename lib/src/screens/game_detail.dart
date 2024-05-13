@@ -3,6 +3,7 @@ import 'package:web_socket_channel/status.dart' as ws_status;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../game/game.dart' show Board, FEN, initialFEN;
+import 'scaffold.dart' show AppScaffold;
 
 const WS_URI = String.fromEnvironment('WS_URI', defaultValue: 'ws://127.0.0.1:3000/ws');
 
@@ -52,8 +53,7 @@ class _GameDataState extends State<GameData> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Sovereign Chess')),
+    return AppScaffold(
       body: Board(
         onPieceMove: _handleFENUpdate,
         currentFEN: _fen,
