@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart' show Provider;
+import 'package:provider/provider.dart' show Consumer, Provider;
 
 import '../data/game.dart' show fetchGames;
 import '../game/game.dart' show GameForList, StaticBoard, fetchGames;
@@ -12,14 +12,20 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const AppScaffold(
-      body: const GamesData(),
+    return AppScaffold(
+      body: Consumer<UserModel>(
+        builder: (context, userModel, child) {
+          return GamesData(userModel: userModel);
+        },
+      ),
     );
   }
 }
 
 class GamesData extends StatefulWidget {
-  const GamesData({super.key});
+  final UserModel userModel;
+
+  GamesData({required this.userModel, super.key});
 
   @override
   State<StatefulWidget> createState() => _GamesDataState();
@@ -31,13 +37,22 @@ class _GamesDataState extends State<GamesData> {
   @override
   void initState() {
     super.initState();
-    final userId = Provider.of<UserModel>(context, listen: false).id;
-    print('user id in games: $userId');
-    _futureGames = fetchGames();
+    print('GamesData initState: ${widget.userModel.id}');
+    _futureGames = fetchGames(widget.userModel.id);
+  }
+
+  @override
+  void didUpdateWidget(GamesData oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    print('GamesData didUpdateWidget: ${widget.userModel.id}');
+    setState(() {
+      _futureGames = fetchGames(widget.userModel.id!);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    print('GamesData build: ${widget.userModel.id}');
     return FutureBuilder<List<GameForList>>(
       future: _futureGames,
       builder: (context, snapshot) {

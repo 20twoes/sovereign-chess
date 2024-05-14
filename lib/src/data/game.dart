@@ -7,8 +7,18 @@ import 'common.dart' show baseApiUrl;
 
 const apiUrl = "$baseApiUrl/games";
 
-Future<List<GameForList>> fetchGames() async {
-  final response = await http.get(Uri.parse(apiUrl));
+Future<List<GameForList>> fetchGames(String? userId) async {
+  if (userId == null) {
+    return [];
+  }
+
+  final response = await http.get(
+    Uri.parse(apiUrl),
+    headers: <String, String>{
+      // TODO: Use a proper JWT token or similar
+      'Authorization': 'Temp $userId',
+    },
+  );
 
   if (response.statusCode == 200) {
     final games = jsonDecode(response.body) as List<dynamic>;

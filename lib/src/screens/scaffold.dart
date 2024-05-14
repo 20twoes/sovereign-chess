@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AppScaffold extends StatelessWidget {
   final Widget body;
 
-  const AppScaffold({super.key, required this.body});
+  const AppScaffold({required this.body, super.key});
 
   @override
   Widget build(BuildContext context) {

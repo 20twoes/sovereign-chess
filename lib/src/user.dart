@@ -18,6 +18,7 @@ class UserModel extends ChangeNotifier {
   }
 
   void setUser(UserModel user) {
+    print('setUser: ${user.id}');
     id = user.id;
     notifyListeners();
   }
