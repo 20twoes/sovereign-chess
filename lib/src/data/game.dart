@@ -15,6 +15,7 @@ Future<List<GameForList>> fetchGames(String? userId) async {
   final response = await http.get(
     Uri.parse(apiUrl),
     headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
       // TODO: Use a proper JWT token or similar
       'Authorization': 'Temp $userId',
     },
@@ -28,11 +29,12 @@ Future<List<GameForList>> fetchGames(String? userId) async {
   }
 }
 
-Future<GameForList> createGame() async {
+Future<GameForList> createGame(String userId) async {
   final response = await http.post(
     Uri.parse(apiUrl),
     headers: <String, String>{
       'Content-Type': 'application/json; charset=UTF-8',
+      'Authorization': 'Temp $userId',
     },
   );
 

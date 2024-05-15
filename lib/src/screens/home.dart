@@ -1,22 +1,112 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart' show Consumer, Provider;
 
-import '../data/game.dart' show fetchGames;
-import '../game/game.dart' show GameForList, StaticBoard, fetchGames;
+import '../data/game.dart' show createGame, fetchGames;
+import '../game/game.dart' show GameForList, StaticBoard;
 import '../user.dart' show UserModel;
 import 'scaffold.dart' show AppScaffold;
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
+  void _createGame(BuildContext context, UserModel userModel) async {
+    final newGame = await createGame(userModel.id!);
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
       body: Consumer<UserModel>(
         builder: (context, userModel, child) {
-          return GamesData(userModel: userModel);
+          return Column(
+            children: [
+              const Hero(),
+              Padding(
+                padding: EdgeInsets.all(24.0),
+                child: TextButton(
+                  onPressed: () { },
+                  child: Text('Learn the rules'),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.only(
+                  left: 16.0,
+                  top: 24.0,
+                  right: 16.0,
+                  bottom: 48.0,
+                ),
+                child: ElevatedButton(
+                  onPressed: () => _createGame(context, userModel),
+                  child: Text('Create a game'),
+                ),
+              ),
+              Expanded(
+                child: GamesData(userModel: userModel),
+              ),
+            ],
+          );
         },
+      ),
+    );
+  }
+}
+
+class Hero extends StatelessWidget {
+  const Hero({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          vertical: 40.0,
+          horizontal: 16.0,
+        ),
+        child: const Logo(),
+      ),
+    );
+  }
+}
+
+class Logo extends StatelessWidget {
+  const Logo({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      'Sovereign Chess',
+      style: TextStyle(
+        fontWeight: FontWeight.w900,
+        fontSize: 32,
+        foreground: Paint()
+          ..shader = ui.Gradient.linear(
+            const Offset(0, 20),
+            const Offset(300, 20),
+            <Color>[
+              Colors.pink,
+              Colors.red,
+              Colors.orange,
+              Colors.yellow,
+              Colors.green,
+              Colors.cyan,
+              Colors.blue,
+              Colors.purple,
+            ],
+            [
+              0.1,
+              0.2,
+              0.3,
+              0.4,
+              0.5,
+              0.6,
+              0.7,
+              0.8,
+            ],
+            TileMode.repeated,
+          )
       ),
     );
   }
@@ -75,14 +165,37 @@ class GameList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      children: [
-        for (var g in games)
-          GestureDetector(
-            child: GameListItem(g),
-            onTap: () => context.go('/play/' + g.id),
-          )
-      ],
+    if (games.length == 0) {
+      return Text('You have no active games');
+    }
+
+    return Container(
+      margin: const EdgeInsets.all(16.0),
+      color: Colors.pink[50],
+      child: Column(
+        children: [
+          Flexible(
+            child: Container(
+              color: Colors.pink[100],
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text('Your games'),
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              children: [
+                for (var g in games)
+                  GestureDetector(
+                    child: GameListItem(g),
+                    onTap: () => context.go('/play/' + g.id),
+                  )
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -157,7 +270,7 @@ class GameListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16.0),
       child: Row(
         children: <Widget>[
           Expanded(
@@ -171,4 +284,3 @@ class GameListItem extends StatelessWidget {
     );
   }
 }
-
