@@ -5,6 +5,24 @@ export 'fen.dart' show FEN, initialFEN;
 
 typedef Games = List<Game>;
 
+enum GameState {
+  Created,
+  Accepted,
+  FirstMove,
+  P2Decided,
+  InProgress,
+  Ended,
+}
+
+GameState _getGameState(String state) {
+  for (final gameState in GameState.values) {
+    if (state == gameState.name) {
+      return gameState;
+    }
+  }
+  throw Exception('GameState not recognized');
+}
+
 class Game {
   final String id;
   List<Move> moves;
@@ -52,10 +70,12 @@ class Move {
 class GameForList {
   final String id;
   final String fen;
+  final GameState state;
 
   GameForList({
     required this.id,
     required this.fen,
+    required this.state,
   });
 
   factory GameForList.fromJson(Map<String, dynamic> json) {
@@ -63,10 +83,12 @@ class GameForList {
       {
         'pid': String id,
         'fen': String fen,
+        'state': String state,
       } =>
         GameForList(
           id: id,
           fen: fen,
+          state: _getGameState(state),
         ),
       _ => throw const FormatException('Failed to load game for list'),
     };

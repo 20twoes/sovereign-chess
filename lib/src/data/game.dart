@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-import '../game/game.dart' show GameForList;
+import '../game/game.dart' show Game, GameForList;
 import 'common.dart' show baseApiUrl;
 
 const apiUrl = "$baseApiUrl/games";
@@ -29,7 +29,7 @@ Future<List<GameForList>> fetchGames(String? userId) async {
   }
 }
 
-Future<GameForList> createGame(String userId) async {
+Future<Game> createGame(String userId) async {
   final response = await http.post(
     Uri.parse(apiUrl),
     headers: <String, String>{
@@ -39,7 +39,7 @@ Future<GameForList> createGame(String userId) async {
   );
 
   if (response.statusCode == 200) {
-    return GameForList.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+    return Game.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
   } else {
     throw Exception('Failed to create game.');
   }

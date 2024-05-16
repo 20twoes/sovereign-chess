@@ -3,17 +3,21 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart' show Consumer, Provider;
+import 'package:url_launcher/url_launcher.dart';
 
 import '../data/game.dart' show createGame, fetchGames;
-import '../game/game.dart' show GameForList, StaticBoard;
+import '../game/game.dart' show GameForList, GameState, StaticBoard;
 import '../user.dart' show UserModel;
 import 'scaffold.dart' show AppScaffold;
+
+final Uri _learnUrl = Uri.parse('https://www.infinitepigames.com/sc-rules');
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   void _createGame(BuildContext context, UserModel userModel) async {
     final newGame = await createGame(userModel.id!);
+    context.go('/play/' + newGame.id);
   }
 
   @override
@@ -27,7 +31,7 @@ class HomeScreen extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.all(24.0),
                 child: TextButton(
-                  onPressed: () { },
+                  onPressed: () => launchUrl(_learnUrl),
                   child: Text('Learn the rules'),
                 ),
               ),
@@ -127,14 +131,12 @@ class _GamesDataState extends State<GamesData> {
   @override
   void initState() {
     super.initState();
-    print('GamesData initState: ${widget.userModel.id}');
     _futureGames = fetchGames(widget.userModel.id);
   }
 
   @override
   void didUpdateWidget(GamesData oldWidget) {
     super.didUpdateWidget(oldWidget);
-    print('GamesData didUpdateWidget: ${widget.userModel.id}');
     setState(() {
       _futureGames = fetchGames(widget.userModel.id!);
     });
@@ -142,16 +144,23 @@ class _GamesDataState extends State<GamesData> {
 
   @override
   Widget build(BuildContext context) {
-    print('GamesData build: ${widget.userModel.id}');
     return FutureBuilder<List<GameForList>>(
       future: _futureGames,
       builder: (context, snapshot) {
+        if (widget.userModel.id == null) {
+          print('userid == null: ${widget.userModel.id}');
+          return const CircularProgressIndicator();
+        }
+
         if (snapshot.hasData) {
+          print('snapshot.hasData: ${widget.userModel.id} ${snapshot.data}');
           return GameList(games: snapshot.data!);
         } else if (snapshot.hasError) {
+          print('snapshot.hasError: ${widget.userModel.id}');
           return Text('${snapshot.error}');
         }
 
+        print('else: ${widget.userModel.id}');
         return const CircularProgressIndicator();
       }
     );
@@ -174,24 +183,24 @@ class GameList extends StatelessWidget {
       color: Colors.pink[50],
       child: Column(
         children: [
-          Flexible(
-            child: Container(
-              color: Colors.pink[100],
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text('Your games'),
-              ),
+          Container(
+            color: Colors.pink[100],
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text('Your games'),
             ),
           ),
           Expanded(
-            child: ListView(
-              children: [
-                for (var g in games)
-                  GestureDetector(
-                    child: GameListItem(g),
-                    onTap: () => context.go('/play/' + g.id),
-                  )
-              ],
+            child: ListView.builder(
+              padding: const EdgeInsets.all(8),
+              itemCount: games.length,
+              itemBuilder: (BuildContext context, int index) {
+                final game = games[index];
+                return GestureDetector(
+                  child: GameListTile(game),
+                  onTap: () => context.go('/play/' + game.id),
+                );
+              },
             ),
           ),
         ],
@@ -200,72 +209,10 @@ class GameList extends StatelessWidget {
   }
 }
 
-//class GamesListScreen extends StatefulWidget {
-//  final ValueChanged<game.GameForList> onTapped;
-//
-//  const GamesListScreen({super.key, required this.onTapped});
-//
-//  @override
-//  State<GamesListScreen> createState() => _GamesListScreenState();
-//}
-//
-//class _GamesListScreenState extends State<GamesListScreen> {
-//  late Future<List<game.GameForList>> _futureGames;
-//
-//  @override
-//  void initState() {
-//    super.initState();
-//    _futureGames = game.fetchGames();
-//  }
-//
-//  void _createGame() async {
-//    final newGame = await game.createGame();
-//    final currentGames = await _futureGames;
-//    // Don't need to use setState since we navigate to another page
-//    _futureGames = Future.value([...currentGames, newGame]);
-//    widget.onTapped(newGame);
-//  }
-//
-//  @override
-//  Widget build(BuildContext context) {
-//    return Scaffold(
-//      appBar: AppBar(
-//        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-//        title: Text('Sovereign Chess'),
-//      ),
-//      body: FutureBuilder<List<game.GameForList>>(
-//        future: _futureGames,
-//        builder: (context, snapshot) {
-//          if (snapshot.hasData) {
-//            return ListView(
-//              children: [
-//                for (var g in snapshot.data!)
-//                  GestureDetector(
-//                    child: GameListItem(g),
-//                    onTap: () => widget.onTapped(g),
-//                  )
-//              ],
-//            );
-//          } else if (snapshot.hasError) {
-//            return Text('${snapshot.error}');
-//          }
-//
-//          return const CircularProgressIndicator();
-//        },
-//      ),
-//      floatingActionButton: FloatingActionButton(
-//        onPressed: _createGame,
-//        tooltip: 'Start a new game',
-//        child: const Text('Play'),
-//      ),
-//    );
-//  }
-//}
-
-class GameListItem extends StatelessWidget {
+class GameListTile extends StatelessWidget {
   final GameForList currentGame;
 
-  GameListItem(this.currentGame);
+  GameListTile(this.currentGame);
 
   @override
   Widget build(BuildContext context) {
@@ -273,14 +220,45 @@ class GameListItem extends StatelessWidget {
       padding: const EdgeInsets.all(16.0),
       child: Row(
         children: <Widget>[
+          StaticBoard(fenStr: currentGame.fen),
           Expanded(
-            child: StaticBoard(fenStr: currentGame.fen),
-          ),
-          Expanded(
-            child: Text(currentGame.id),
+            child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: GameInfo(game: currentGame),
+            ),
           ),
         ],
       ),
     );
+  }
+}
+
+class GameInfo extends StatelessWidget {
+  final GameForList game;
+
+  GameInfo({required this.game, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(_getStatus()),
+        Text(
+          'ID: ${game.id}',
+          style: TextStyle(
+            fontSize: 10,
+            color: Colors.black.withOpacity(0.6),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _getStatus() {
+    return switch (game.state) {
+      GameState.Created => 'Challenge',
+      _ => 'TODO: Need to implement',
+    };
   }
 }
