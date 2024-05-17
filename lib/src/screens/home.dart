@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart' show Consumer, Provider;
 import 'package:url_launcher/url_launcher.dart';
 
-import '../data/game.dart' show createGame, fetchGames;
+import '../api/game_service.dart' show GameService;
 import '../game/game.dart' show GameForList, GameState, StaticBoard;
 import '../user.dart' show UserModel;
 import 'scaffold.dart' show AppScaffold;
@@ -15,44 +15,42 @@ final Uri _learnUrl = Uri.parse('https://www.infinitepigames.com/sc-rules');
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  void _createGame(BuildContext context, UserModel userModel) async {
-    final newGame = await createGame(userModel.id!);
-    context.go('/play/' + newGame.id);
+  void _createGame(BuildContext context) async {
+    final newGame = await Provider.of<GameService>(context, listen: false).createGame();
+    if (newGame?.id != null) {
+      context.go('/play/${newGame?.id}');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      body: Consumer<UserModel>(
-        builder: (context, userModel, child) {
-          return Column(
-            children: [
-              const Hero(),
-              Padding(
-                padding: EdgeInsets.all(24.0),
-                child: TextButton(
-                  onPressed: () => launchUrl(_learnUrl),
-                  child: Text('Learn the rules'),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(
-                  left: 16.0,
-                  top: 24.0,
-                  right: 16.0,
-                  bottom: 48.0,
-                ),
-                child: ElevatedButton(
-                  onPressed: () => _createGame(context, userModel),
-                  child: Text('Create a game'),
-                ),
-              ),
-              Expanded(
-                child: GamesData(userModel: userModel),
-              ),
-            ],
-          );
-        },
+      body: Column(
+        children: [
+          const Hero(),
+          Padding(
+            padding: EdgeInsets.all(24.0),
+            child: TextButton(
+              onPressed: () => launchUrl(_learnUrl),
+              child: Text('Learn the rules'),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.only(
+              left: 16.0,
+              top: 24.0,
+              right: 16.0,
+              bottom: 48.0,
+            ),
+            child: ElevatedButton(
+              onPressed: () => _createGame(context),
+              child: Text('Create a game'),
+            ),
+          ),
+          Expanded(
+            child: GameList(),
+          ),
+        ],
       ),
     );
   }
@@ -116,66 +114,28 @@ class Logo extends StatelessWidget {
   }
 }
 
-class GamesData extends StatefulWidget {
-  final UserModel userModel;
-
-  GamesData({required this.userModel, super.key});
-
-  @override
-  State<StatefulWidget> createState() => _GamesDataState();
-}
-
-class _GamesDataState extends State<GamesData> {
-  late Future<List<GameForList>> _futureGames;
-
-  @override
-  void initState() {
-    super.initState();
-    _futureGames = fetchGames(widget.userModel.id);
-  }
-
-  @override
-  void didUpdateWidget(GamesData oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    setState(() {
-      _futureGames = fetchGames(widget.userModel.id!);
-    });
-  }
-
+class GameList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<GameForList>>(
-      future: _futureGames,
+    return StreamBuilder<List<GameForList>>(
+      stream: Provider.of<GameService>(context).games,
       builder: (context, snapshot) {
-        if (widget.userModel.id == null) {
-          print('userid == null: ${widget.userModel.id}');
-          return const CircularProgressIndicator();
-        }
-
         if (snapshot.hasData) {
-          print('snapshot.hasData: ${widget.userModel.id} ${snapshot.data}');
-          return GameList(games: snapshot.data!);
+          return _buildList(snapshot.data!);
         } else if (snapshot.hasError) {
-          print('snapshot.hasError: ${widget.userModel.id}');
           return Text('${snapshot.error}');
         }
 
-        print('else: ${widget.userModel.id}');
-        return const CircularProgressIndicator();
-      }
+        return Center(
+          child: const CircularProgressIndicator(),
+        );
+      },
     );
   }
-}
 
-class GameList extends StatelessWidget {
-  final List<GameForList> games;
-
-  GameList({super.key, required this.games});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildList(List<GameForList> games) {
     if (games.length == 0) {
-      return Text('You have no active games');
+      return Text('');
     }
 
     return Container(
