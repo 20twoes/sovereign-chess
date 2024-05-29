@@ -25,10 +25,14 @@ GameState _getGameState(String state) {
 
 class Game {
   final String id;
+  final GameState state;
+  final String player1;
   List<Move> moves;
 
   Game({
     required this.id,
+    required this.state,
+    required this.player1,
     required this.moves,
   });
 
@@ -36,17 +40,25 @@ class Game {
     return switch (json) {
       {
         'pid': String id,
+        'state': String state,
+        'player1': String player1,
         'moves': List<dynamic> moves,
       } =>
         Game(
           id: id,
+          state: _getGameState(state),
+          player1: player1,
           moves: [for (var move in moves) Move.fromJson(move)],
         ),
       _ => throw const FormatException('Failed to load game.'),
     };
   }
 
-  //String get fen => moves.last.fen;
+  String get fen => moves.last.fen;
+
+  bool hasJoinedGame(String userId) {
+    return userId == player1;
+  }
 }
 
 class Move {

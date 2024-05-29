@@ -7,7 +7,6 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../api/game_service.dart' show GameService;
 import '../game/game.dart' show GameForList, GameState, StaticBoard;
-import '../user.dart' show UserModel;
 import 'scaffold.dart' show AppScaffold;
 
 final Uri _learnUrl = Uri.parse('https://www.infinitepigames.com/sc-rules');
@@ -126,8 +125,8 @@ class GameList extends StatelessWidget {
           return Text('${snapshot.error}');
         }
 
-        return Center(
-          child: const CircularProgressIndicator(),
+        return const Center(
+          child: CircularProgressIndicator(),
         );
       },
     );
