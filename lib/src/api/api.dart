@@ -7,7 +7,8 @@ import '../game/game.dart' show Game, GameForList;
 
 // Network requests for the app
 class Api {
-  static const baseUrl = "${String.fromEnvironment('API_HOST', defaultValue: 'http://127.0.0.1:3000/api')}";
+  static const baseUrl =
+      "${String.fromEnvironment('API_HOST', defaultValue: 'http://127.0.0.1:3000/api')}";
   static const userEndpoint = "$baseUrl/users";
   static const gameEndpoint = "$baseUrl/games";
 
@@ -20,7 +21,8 @@ class Api {
     );
 
     if (response.statusCode == 200) {
-      return UserModel.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+      return UserModel.fromJson(
+          jsonDecode(response.body) as Map<String, dynamic>);
     } else {
       throw Exception('Failed to create user.');
     }

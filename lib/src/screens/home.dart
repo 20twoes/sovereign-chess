@@ -15,7 +15,8 @@ class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   void _createGame(BuildContext context) async {
-    final newGame = await Provider.of<GameService>(context, listen: false).createGame();
+    final newGame =
+        await Provider.of<GameService>(context, listen: false).createGame();
     if (newGame?.id != null) {
       context.go('/play/${newGame?.id}');
     }
@@ -80,35 +81,34 @@ class Logo extends StatelessWidget {
     return Text(
       'Sovereign Chess',
       style: TextStyle(
-        fontWeight: FontWeight.w900,
-        fontSize: 32,
-        foreground: Paint()
-          ..shader = ui.Gradient.linear(
-            const Offset(0, 20),
-            const Offset(300, 20),
-            <Color>[
-              Colors.pink,
-              Colors.red,
-              Colors.orange,
-              Colors.yellow,
-              Colors.green,
-              Colors.cyan,
-              Colors.blue,
-              Colors.purple,
-            ],
-            [
-              0.1,
-              0.2,
-              0.3,
-              0.4,
-              0.5,
-              0.6,
-              0.7,
-              0.8,
-            ],
-            TileMode.repeated,
-          )
-      ),
+          fontWeight: FontWeight.w900,
+          fontSize: 32,
+          foreground: Paint()
+            ..shader = ui.Gradient.linear(
+              const Offset(0, 20),
+              const Offset(300, 20),
+              <Color>[
+                Colors.pink,
+                Colors.red,
+                Colors.orange,
+                Colors.yellow,
+                Colors.green,
+                Colors.cyan,
+                Colors.blue,
+                Colors.purple,
+              ],
+              [
+                0.1,
+                0.2,
+                0.3,
+                0.4,
+                0.5,
+                0.6,
+                0.7,
+                0.8,
+              ],
+              TileMode.repeated,
+            )),
     );
   }
 }

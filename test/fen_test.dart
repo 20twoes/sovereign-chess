@@ -57,7 +57,8 @@ void main() {
         'p1': Piece(color: Color.navy, role: Role.pawn),
       };
       final result = fen.write(pieces);
-      expect(result, '16/wr15/16/02wr01wr11/16/16/16/16/10pb05/16/16/16/16/16/16/15np');
+      expect(result,
+          '16/wr15/16/02wr01wr11/16/16/16/16/10pb05/16/16/16/16/16/16/15np');
     });
   });
 }

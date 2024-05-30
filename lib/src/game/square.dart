@@ -20,9 +20,7 @@ class StaticSquareNode extends StatelessWidget {
       child: SizedBox(
         width: 10,
         height: 10,
-        child: piece != null
-          ? _PieceWidget(piece: piece)
-          : null,
+        child: piece != null ? _PieceWidget(piece: piece) : null,
       ),
       decoration: BoxDecoration(
         border: Border.all(width: 0.0, color: Colors.black26),
@@ -58,27 +56,29 @@ class _SquareNodeState extends State<SquareNode> {
   @override
   Widget build(BuildContext context) {
     return DragTarget<plib.Piece>(
-      builder: (BuildContext context, List<dynamic> accepted, List<dynamic> rejected) {
+      builder: (BuildContext context, List<dynamic> accepted,
+          List<dynamic> rejected) {
         return Container(
           child: Stack(
             children: [
               _Label(name: widget.name),
-              if (widget.piece != null) Positioned.fill(
-                child: Draggable<plib.Piece>(
-                  data: widget.piece,
-                  dragAnchorStrategy: pointerDragAnchorStrategy,
-                  maxSimultaneousDrags: 1,
-                  onDragStarted: _handleDragStarted,
-                  feedback: _DraggingPiece(
-                    dragKey: widget.dragKey,
-                    piece: widget.piece,
-                  ),
-                  childWhenDragging: Text(' '),
-                  child: Container(
-                    child: _PieceWidget(piece: widget.piece),
+              if (widget.piece != null)
+                Positioned.fill(
+                  child: Draggable<plib.Piece>(
+                    data: widget.piece,
+                    dragAnchorStrategy: pointerDragAnchorStrategy,
+                    maxSimultaneousDrags: 1,
+                    onDragStarted: _handleDragStarted,
+                    feedback: _DraggingPiece(
+                      dragKey: widget.dragKey,
+                      piece: widget.piece,
+                    ),
+                    childWhenDragging: Text(' '),
+                    child: Container(
+                      child: _PieceWidget(piece: widget.piece),
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
           decoration: BoxDecoration(

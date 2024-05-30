@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart' show
-  MultiProvider,
-  Provider,
-  ProxyProvider,
-  ProxyProvider2,
-  StreamProvider;
+import 'package:provider/provider.dart'
+    show MultiProvider, Provider, ProxyProvider, ProxyProvider2, StreamProvider;
 import 'package:web_socket_channel/status.dart' as status;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -54,19 +50,18 @@ void main() {
         ),
         StreamProvider<UserModel>(
           create: (context) =>
-            Provider.of<AuthService>(context, listen: false).user,
+              Provider.of<AuthService>(context, listen: false).user,
           initialData: UserModel(),
         ),
         ProxyProvider2<Api, UserModel, GameService>(
-          update: (context, api, userModel, gameService) {
-            final service = GameService(api: api, userModel: userModel);
-            service.fetchGames();
-            return service;
-          }
-        ),
+            update: (context, api, userModel, gameService) {
+          final service = GameService(api: api, userModel: userModel);
+          service.fetchGames();
+          return service;
+        }),
         StreamProvider<List<GameForList>>(
           create: (context) =>
-            Provider.of<GameService>(context, listen: false).games,
+              Provider.of<GameService>(context, listen: false).games,
           initialData: [],
         ),
       ],

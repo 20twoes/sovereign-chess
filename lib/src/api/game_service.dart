@@ -12,7 +12,8 @@ class GameService {
 
   GameService({required this.api, required this.userModel});
 
-  StreamController<List<GameForList>> _gamesController = StreamController<List<GameForList>>.broadcast();
+  StreamController<List<GameForList>> _gamesController =
+      StreamController<List<GameForList>>.broadcast();
 
   Stream<List<GameForList>> get games => _gamesController.stream;
 

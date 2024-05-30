@@ -65,9 +65,9 @@ class StaticBoard extends StatelessWidget {
     return Row(
       children: <Widget>[
         for (final file in files)
-        Column(
-          children: file.reversed.toList(),
-        ),
+          Column(
+            children: file.reversed.toList(),
+          ),
       ],
     );
   }
@@ -125,8 +125,7 @@ class Board extends StatefulWidget {
     super.key,
     required this.onPieceMove,
     required this.currentFEN,
-  })
-    : _pieces = fen.read(currentFEN);
+  }) : _pieces = fen.read(currentFEN);
 
   @override
   State<Board> createState() => _BoardState();

@@ -9,7 +9,8 @@ import '../game/game.dart' show Board, Game, GameState;
 import '../user.dart' show UserModel;
 import 'scaffold.dart' show AppScaffold;
 
-const WS_URI = String.fromEnvironment('WS_URI', defaultValue: 'ws://127.0.0.1:3000/ws');
+const WS_URI =
+    String.fromEnvironment('WS_URI', defaultValue: 'ws://127.0.0.1:3000/ws');
 
 class GameDetailScreen extends StatelessWidget {
   final String gameId;
@@ -84,7 +85,7 @@ class _GameDataState extends State<GameData> {
       GameState.Created => GameCreatedScreen(
           sendMessage: _sendMessage,
           game: game,
-      ),
+        ),
       _ => throw Exception('Implement screen for game state: ${game.state}'),
     };
   }
@@ -114,7 +115,8 @@ class GameCreatedScreen extends StatelessWidget {
 
   Widget _buildScreenForPlayer1(BuildContext context) {
     return Center(
-      child: SelectableText('To invite someone to play, give this URL: ${Uri.base}'),
+      child: SelectableText(
+          'To invite someone to play, give this URL: ${Uri.base}'),
     );
   }
 

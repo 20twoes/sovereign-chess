@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:shared_preferences/shared_preferences.dart' show SharedPreferences;
+import 'package:shared_preferences/shared_preferences.dart'
+    show SharedPreferences;
 
 import 'api.dart' show Api;
 import '../user.dart' show UserModel;

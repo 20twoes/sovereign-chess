@@ -4,9 +4,11 @@ import 'square_key.dart';
 typedef FEN = String;
 
 class InvalidFENException implements Exception {}
+
 class FENTokenIteratorException implements Exception {}
 
-const FEN initialFEN = 'aqabvrvnbrbnbbbqbkbbbnbrynyrsbsq/aranvpvpbpbpbpbpbpbpbpbpypypsnsr/nbnp12opob/nqnp12opoq/crcp12rprr/cncp12rprn/gbgp12pppb/gqgp12pppq/yqyp12vpvq/ybyp12vpvb/onop12npnn/orop12npnr/rqrp12cpcq/rbrp12cpcb/srsnppppwpwpwpwpwpwpwpwpgpgpanar/sqsbprpnwrwnwbwqwkwbwnwrgngrabaq';
+const FEN initialFEN =
+    'aqabvrvnbrbnbbbqbkbbbnbrynyrsbsq/aranvpvpbpbpbpbpbpbpbpbpypypsnsr/nbnp12opob/nqnp12opoq/crcp12rprr/cncp12rprn/gbgp12pppb/gqgp12pppq/yqyp12vpvq/ybyp12vpvb/onop12npnn/orop12npnr/rqrp12cpcq/rbrp12cpcb/srsnppppwpwpwpwpwpwpwpwpgpgpanar/sqsbprpnwrwnwbwqwkwbwnwrgngrabaq';
 
 const letterToColors = {
   'a': Color.ash,
@@ -133,9 +135,10 @@ FEN write(Pieces pieces) {
       final piece = pieces[file + rank];
       return piece != null ? getPieceKey(piece) : '1';
     });
-    return tokens.join('').splitMapJoin(RegExp(r'1+'),
-      onMatch: (m) => '${m[0]!.length}'.padLeft(2, '0'),
-    );
+    return tokens.join('').splitMapJoin(
+          RegExp(r'1+'),
+          onMatch: (m) => '${m[0]!.length}'.padLeft(2, '0'),
+        );
   });
   return rows.join('/');
 }
