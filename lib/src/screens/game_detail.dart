@@ -2,15 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart' show Provider;
-import 'package:web_socket_channel/status.dart' as ws_status;
-import 'package:web_socket_channel/web_socket_channel.dart';
 
+import '../api/websocket_service.dart' show WebsocketService;
 import '../game/game.dart' show Board, Game, GameState;
 import '../user.dart' show UserModel;
 import 'scaffold.dart' show AppScaffold;
-
-const WS_URI =
-    String.fromEnvironment('WS_URI', defaultValue: 'ws://127.0.0.1:3000/ws');
 
 class GameDetailScreen extends StatelessWidget {
   final String gameId;
@@ -33,25 +29,24 @@ class GameData extends StatefulWidget {
 }
 
 class _GameDataState extends State<GameData> {
-  late WebSocketChannel _channel;
+  WebsocketService? _wss;
 
   @override
-  void initState() {
-    super.initState();
-    _channel = WebSocketChannel.connect(
-      Uri.parse(WS_URI + '/v0/play/' + widget.gameId),
-    );
-  }
-
-  void _sendMessage(String message) {
-    _channel.sink.add(message);
+  void didChangeDependencies() {
+    if (_wss == null) {
+      final user = Provider.of<UserModel>(context);
+      if (user.isReady()) {
+        _wss = WebsocketService(gameId: widget.gameId, user: user);
+      }
+    }
+    super.didChangeDependencies();
   }
 
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
       body: StreamBuilder<dynamic>(
-        stream: _channel.stream,
+        stream: _wss?.stream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Text('Strack trace: ${snapshot.stackTrace}');
@@ -83,8 +78,8 @@ class _GameDataState extends State<GameData> {
   Widget _getScreen(Game game) {
     return switch (game.state) {
       GameState.Created => GameCreatedScreen(
-          sendMessage: _sendMessage,
           game: game,
+          joinGame: _wss?.joinGame,
         ),
       _ => throw Exception('Implement screen for game state: ${game.state}'),
     };
@@ -92,21 +87,21 @@ class _GameDataState extends State<GameData> {
 
   @override
   void dispose() {
-    _channel.sink.close(ws_status.normalClosure);
+    _wss?.close();
     super.dispose();
   }
 }
 
 class GameCreatedScreen extends StatelessWidget {
-  final ValueChanged<String> sendMessage;
   final Game game;
+  final Function? joinGame;
 
-  GameCreatedScreen({required this.sendMessage, required this.game});
+  GameCreatedScreen({required this.game, required this.joinGame});
 
   @override
   Widget build(BuildContext context) {
-    final userId = Provider.of<UserModel>(context).id;
-    if (userId != null && game.hasJoinedGame(userId as String)) {
+    final user = Provider.of<UserModel>(context);
+    if (user.isReady() && game.hasJoinedGame(user.id as String)) {
       return _buildScreenForPlayer1(context);
     } else {
       return _buildScreenForPlayer2(context);
@@ -124,11 +119,16 @@ class GameCreatedScreen extends StatelessWidget {
     final userId = Provider.of<UserModel>(context).id;
     return Center(
       child: ElevatedButton(
-        // TODO: Implement this handler
-        onPressed: () => print('joining game'),
+        onPressed: _handleJoinGame,
         child: Text('Join this game with $userId'),
       ),
     );
+  }
+
+  void _handleJoinGame() {
+    if (joinGame != null) {
+      joinGame!(game: game);
+    }
   }
 }
 
