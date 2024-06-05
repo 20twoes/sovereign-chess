@@ -29,5 +29,7 @@ class WebsocketService {
 
   void joinGame({required Game game}) {
     print(_user.id! + ' joining game in handler');
+    final message = '{"t": "join"}';
+    send(message);
   }
 }

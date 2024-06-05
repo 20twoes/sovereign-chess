@@ -116,11 +116,10 @@ class GameCreatedScreen extends StatelessWidget {
   }
 
   Widget _buildScreenForPlayer2(BuildContext context) {
-    final userId = Provider.of<UserModel>(context).id;
     return Center(
       child: ElevatedButton(
         onPressed: _handleJoinGame,
-        child: Text('Join this game with $userId'),
+        child: Text('Join this game with ${game.player1}'),
       ),
     );
   }
