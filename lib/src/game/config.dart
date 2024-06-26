@@ -31,3 +31,5 @@ final colors = (
   navyPiece: Colors.indigo,
   violetPiece: Colors.deepPurple,
 );
+
+final hoverColor = Colors.black.withOpacity(0.5);

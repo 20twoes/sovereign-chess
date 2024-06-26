@@ -56,8 +56,11 @@ class _SquareNodeState extends State<SquareNode> {
   @override
   Widget build(BuildContext context) {
     return DragTarget<plib.Piece>(
-      builder: (BuildContext context, List<dynamic> accepted,
-          List<dynamic> rejected) {
+      builder: (BuildContext context, List<dynamic> candidateData,
+          List<dynamic> rejectedData) {
+        final backgroundColor =
+            (candidateData.length > 0) ? hoverColor : widget.color;
+
         return Container(
           child: Stack(
             children: [
@@ -73,7 +76,7 @@ class _SquareNodeState extends State<SquareNode> {
                       dragKey: widget.dragKey,
                       piece: widget.piece,
                     ),
-                    childWhenDragging: Text(' '),
+                    childWhenDragging: Container(),
                     child: Container(
                       child: _PieceWidget(piece: widget.piece),
                     ),
@@ -83,7 +86,7 @@ class _SquareNodeState extends State<SquareNode> {
           ),
           decoration: BoxDecoration(
             border: Border.all(width: 0.0, color: Colors.black26),
-            color: widget.color,
+            color: backgroundColor,
           ),
         );
       },
