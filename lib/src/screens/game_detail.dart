@@ -81,6 +81,10 @@ class _GameDataState extends State<GameData> {
           game: game,
           joinGame: _wss?.joinGame,
         ),
+      GameState.Accepted => GameAcceptedScreen(
+          game: game,
+          onPieceMove: _wss!.movePiece,
+        ),
       _ => throw Exception('Implement screen for game state: ${game.state}'),
     };
   }
@@ -126,16 +130,16 @@ class GameCreatedScreen extends StatelessWidget {
 
   void _handleJoinGame() {
     if (joinGame != null) {
-      joinGame!(game: game);
+      joinGame!();
     }
   }
 }
 
-class TempScreen extends StatelessWidget {
+class GameAcceptedScreen extends StatelessWidget {
   final ValueChanged<String> onPieceMove;
   final Game game;
 
-  TempScreen({
+  GameAcceptedScreen({
     required this.onPieceMove,
     required this.game,
   });

@@ -1,7 +1,7 @@
 import 'package:web_socket_channel/status.dart' as ws_status;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import '../game/game.dart' show Game;
+import '../game/game.dart' show FEN, Game;
 import '../user.dart' show UserModel;
 
 const WS_URI =
@@ -27,9 +27,14 @@ class WebsocketService {
     _channel.sink.close(ws_status.normalClosure);
   }
 
-  void joinGame({required Game game}) {
-    print(_user.id! + ' joining game in handler');
+  void joinGame() {
     final message = '{"t": "join"}';
+    send(message);
+  }
+
+  void movePiece(FEN fen) {
+    print(_user.id! + 'move piece in handler');
+    final message = '{"t": "move", "d": "$fen"}';
     send(message);
   }
 }
