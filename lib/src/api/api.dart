@@ -47,7 +47,6 @@ class Api {
   }
 
   Future<Game> createGame(String userId) async {
-    print('api.createGame start');
     final response = await http.post(
       Uri.parse(gameEndpoint),
       headers: <String, String>{

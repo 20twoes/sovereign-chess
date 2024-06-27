@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart' show Provider;
 
 import '../api/websocket_service.dart' show WebsocketService;
-import '../game/game.dart' show Board, Game, GameState;
+import '../game/game.dart' show Board, FEN, Game, GameState;
 import '../user.dart' show UserModel;
 import 'scaffold.dart' show AppScaffold;
 
@@ -105,7 +105,7 @@ class GameCreatedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = Provider.of<UserModel>(context);
-    if (user.isReady() && game.hasJoinedGame(user.id as String)) {
+    if (user.isReady() && game.userCreatedGame(user.id as String)) {
       return _buildScreenForPlayer1(context);
     } else {
       return _buildScreenForPlayer2(context);
@@ -147,8 +147,13 @@ class GameAcceptedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Board(
-      onPieceMove: onPieceMove,
+      onPieceMove: (newFEN) => _handlePieceMove(context, newFEN),
       currentFEN: game.fen,
     );
+  }
+
+  void _handlePieceMove(BuildContext context, FEN newFEN) {
+    // Do any additional data formatting and validation here
+    onPieceMove(newFEN);
   }
 }

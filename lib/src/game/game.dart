@@ -27,12 +27,14 @@ class Game {
   final String id;
   final GameState state;
   final String player1;
+  final String? player2;
   List<Move> moves;
 
   Game({
     required this.id,
     required this.state,
     required this.player1,
+    this.player2,
     required this.moves,
   });
 
@@ -42,12 +44,14 @@ class Game {
         'pid': String id,
         'state': String state,
         'player1': String player1,
+        'player2': String? player2,
         'moves': List<dynamic> moves,
       } =>
         Game(
           id: id,
           state: _getGameState(state),
           player1: player1,
+          player2: player2,
           moves: [for (var move in moves) Move.fromJson(move)],
         ),
       _ => throw const FormatException('Failed to load game.'),
@@ -56,24 +60,38 @@ class Game {
 
   String get fen => moves.last.fen;
 
-  bool hasJoinedGame(String userId) {
+  bool userCreatedGame(String userId) {
     return userId == player1;
   }
+
+  //bool isPlayersTurn(String userId) {
+  //  final lastMove = moves.last;
+  //  switch (lastMove.activePlayer) {
+  //    case 1:
+  //      return userId == player1;
+  //    case 2:
+  //      return userId == player2;
+  //    default:
+  //      throw Exception("activePlayer not recognized");
+  //  }
+  //}
 }
 
 class Move {
   final String fen;
+  final int activePlayer;
   final int ply;
 
-  Move({required this.fen, required this.ply});
+  Move({required this.fen, required this.activePlayer, required this.ply});
 
   factory Move.fromJson(Map<String, dynamic> json) {
     return switch (json) {
       {
         'fen': String fen,
+        'active_player': int activePlayer,
         'ply': int ply,
       } =>
-        Move(fen: fen, ply: ply),
+        Move(fen: fen, activePlayer: activePlayer, ply: ply),
       _ => throw const FormatException('Failed to load move'),
     };
   }
