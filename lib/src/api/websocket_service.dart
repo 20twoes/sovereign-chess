@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:web_socket_channel/status.dart' as ws_status;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -32,9 +34,8 @@ class WebsocketService {
     send(message);
   }
 
-  void movePiece(FEN fen) {
-    print(_user.id! + 'move piece in handler');
-    final message = '{"t": "move", "d": "$fen"}';
+  void movePiece(Map moveData) {
+    final message = '{"t": "move", "d": ${json.encode(moveData)}}';
     send(message);
   }
 }

@@ -117,7 +117,7 @@ class StaticBoard extends StatelessWidget {
 }
 
 class Board extends StatefulWidget {
-  final ValueChanged<fen.FEN> onPieceMove;
+  final ValueChanged<Map<String, String>> onPieceMove;
   final fen.FEN currentFEN;
   late plib.Pieces _pieces;
 
@@ -181,7 +181,11 @@ class _BoardState extends State<Board> {
       final newFEN = fen.write(widget._pieces);
       print('$piece from $_movingSquare to $squareKey');
       print('Updated FEN: $newFEN');
-      widget.onPieceMove(newFEN);
+      final moveData = {
+        'fen': newFEN,
+        'san': '${piece.notation}$_movingSquare$squareKey',
+      };
+      widget.onPieceMove(moveData);
     });
   }
 }

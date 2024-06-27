@@ -136,7 +136,7 @@ class GameCreatedScreen extends StatelessWidget {
 }
 
 class GameAcceptedScreen extends StatelessWidget {
-  final ValueChanged<String> onPieceMove;
+  final ValueChanged<Map<String, String>> onPieceMove;
   final Game game;
 
   GameAcceptedScreen({
@@ -147,13 +147,13 @@ class GameAcceptedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Board(
-      onPieceMove: (newFEN) => _handlePieceMove(context, newFEN),
+      onPieceMove: (data) => _handlePieceMove(context, data),
       currentFEN: game.fen,
     );
   }
 
-  void _handlePieceMove(BuildContext context, FEN newFEN) {
+  void _handlePieceMove(BuildContext context, Map<String, String> data) {
     // Do any additional data formatting and validation here
-    onPieceMove(newFEN);
+    onPieceMove(data);
   }
 }

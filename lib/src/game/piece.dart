@@ -12,6 +12,15 @@ enum Role {
   rook,
 }
 
+const roleNotations = {
+  Role.bishop: 'B',
+  Role.king: 'K',
+  Role.knight: 'N',
+  Role.pawn: 'P',
+  Role.queen: 'Q',
+  Role.rook: 'R',
+};
+
 enum Color {
   ash,
   black,
@@ -27,13 +36,30 @@ enum Color {
   yellow,
 }
 
+const colorNotations = {
+  Color.ash: 'A',
+  Color.black: 'B',
+  Color.cyan: 'C',
+  Color.green: 'G',
+  Color.navy: 'N',
+  Color.orange: 'O',
+  Color.pink: 'P',
+  Color.red: 'R',
+  Color.slate: 'S',
+  Color.violet: 'V',
+  Color.white: 'W',
+  Color.yellow: 'Y',
+};
+
 class Piece {
   final Color color;
   final Role role;
 
   Piece({required this.color, required this.role});
 
-  String get name => role == Role.knight ? 'N' : role.name[0].toUpperCase();
+  //String get name => role == Role.knight ? 'N' : role.name[0].toUpperCase();
+
+  String get notation => '${colorNotations[color]}${roleNotations[role]}';
 
   @override
   operator ==(o) => o is Piece && o.color == color && o.role == role;
