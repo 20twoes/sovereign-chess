@@ -30,6 +30,7 @@ class GameData extends StatefulWidget {
 
 class _GameDataState extends State<GameData> {
   WebsocketService? _wss;
+  Game? _gameCache;
 
   @override
   void didChangeDependencies() {
@@ -59,8 +60,7 @@ class _GameDataState extends State<GameData> {
                   child: CircularProgressIndicator(),
                 );
               case ConnectionState.active:
-                final game = _parseGame(snapshot.data);
-                return _getScreen(game);
+                return _buildScreen(snapshot.data);
               case ConnectionState.done:
                 return Text('Connection done');
             }
@@ -70,9 +70,36 @@ class _GameDataState extends State<GameData> {
     );
   }
 
-  Game _parseGame(String data) {
-    final map = jsonDecode(data) as Map<String, dynamic>;
-    return Game.fromJson(map);
+  Widget _buildScreen(String data) {
+    final json = jsonDecode(data) as Map<String, dynamic>;
+
+    // Check for error messages
+    final error = _getError(json);
+
+    if (error != null) {
+      // Don't update the board.  Show previous board state, along with error message.
+      return Stack(
+        children: <Widget>[
+          _getScreen(_gameCache as Game),
+          Container(
+            child: Text(
+              error,
+              style: TextStyle(color: Colors.white),
+            ),
+            decoration: BoxDecoration(color: Colors.black.withOpacity(0.5)),
+            padding: const EdgeInsets.all(4),
+          ),
+        ],
+      );
+    } else {
+      final game = Game.fromJson(json);
+      _gameCache = game;
+      return _getScreen(game);
+    }
+  }
+
+  String? _getError(Map<String, dynamic> json) {
+    return json['message'];
   }
 
   Widget _getScreen(Game game) {
