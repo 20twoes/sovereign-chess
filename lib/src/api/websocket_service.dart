@@ -38,4 +38,14 @@ class WebsocketService {
     final message = '{"t": "move", "d": ${json.encode(moveData)}}';
     send(message);
   }
+
+  void acceptFirstMove() {
+    final message = '{"t": "first_move", "d": "accept"}';
+    send(message);
+  }
+
+  void rejectFirstMove() {
+    final message = '{"t": "first_move", "d": "reject"}';
+    send(message);
+  }
 }

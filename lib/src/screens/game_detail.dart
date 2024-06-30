@@ -86,7 +86,7 @@ class _GameDataState extends State<GameData> {
               error,
               style: TextStyle(color: Colors.white),
             ),
-            decoration: BoxDecoration(color: Colors.black.withOpacity(0.5)),
+            decoration: BoxDecoration(color: Colors.red.withOpacity(0.8)),
             padding: const EdgeInsets.all(4),
           ),
         ],
@@ -111,6 +111,11 @@ class _GameDataState extends State<GameData> {
       GameState.Accepted => GameAcceptedScreen(
           game: game,
           onPieceMove: _wss!.movePiece,
+        ),
+      GameState.FirstMove => GameFirstMoveScreen(
+          game: game,
+          onAcceptFirstMove: _wss!.acceptFirstMove,
+          onRejectFirstMove: _wss!.rejectFirstMove,
         ),
       _ => throw Exception('Implement screen for game state: ${game.state}'),
     };
@@ -182,5 +187,69 @@ class GameAcceptedScreen extends StatelessWidget {
   void _handlePieceMove(BuildContext context, Map<String, String> data) {
     // Do any additional data formatting and validation here
     onPieceMove(data);
+  }
+}
+
+class GameFirstMoveScreen extends StatelessWidget {
+  final Game game;
+  final void Function() onAcceptFirstMove;
+  final void Function() onRejectFirstMove;
+
+  GameFirstMoveScreen({
+    required this.game,
+    required this.onAcceptFirstMove,
+    required this.onRejectFirstMove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final user = Provider.of<UserModel>(context);
+
+    if (!user.isReady()) {
+      return Text('Loading...');
+    }
+
+    final isPlayer1 = game.userCreatedGame(user.id as String);
+
+    return Stack(
+      children: <Widget>[
+        Board(
+          onPieceMove: (data) => null,
+          currentFEN: game.fen,
+        ),
+        if (isPlayer1) _getPlayer1Dialog(),
+        if (!isPlayer1) _getPlayer2Dialog(),
+      ],
+    );
+  }
+
+  Widget _getPlayer1Dialog() {
+    return AlertDialog(
+      content: SingleChildScrollView(
+        child: Text(
+            'Waiting on Player 2 to decide whether they want to play as white or black...'),
+      ),
+    );
+  }
+
+  Widget _getPlayer2Dialog() {
+    return AlertDialog(
+      content: SingleChildScrollView(
+        child: Text(
+            'Do you want to accept the first move and play as white? Or reject the first move and play as black?'),
+      ),
+      actions: <Widget>[
+        TextButton(
+            child: const Text('Accept'),
+            onPressed: () {
+              onAcceptFirstMove();
+            }),
+        TextButton(
+            child: const Text('Reject'),
+            onPressed: () {
+              onRejectFirstMove();
+            }),
+      ],
+    );
   }
 }
