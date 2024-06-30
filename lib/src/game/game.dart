@@ -9,7 +9,6 @@ enum GameState {
   Created,
   Accepted,
   FirstMove,
-  P2Decided,
   InProgress,
   Ended,
 }

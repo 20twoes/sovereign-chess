@@ -62,7 +62,7 @@ class _GameDataState extends State<GameData> {
               case ConnectionState.active:
                 return _buildScreen(snapshot.data);
               case ConnectionState.done:
-                return Text('Connection done');
+                return Text('Connection done/closed');
             }
           }
         },
@@ -110,12 +110,16 @@ class _GameDataState extends State<GameData> {
         ),
       GameState.Accepted => GameAcceptedScreen(
           game: game,
-          onPieceMove: _wss!.movePiece,
+          onPieceMove: _wss!.makeFirstMove,
         ),
       GameState.FirstMove => GameFirstMoveScreen(
           game: game,
           onAcceptFirstMove: _wss!.acceptFirstMove,
           onRejectFirstMove: _wss!.rejectFirstMove,
+        ),
+      GameState.InProgress => GameInProgressScreen(
+          game: game,
+          onPieceMove: _wss!.movePiece,
         ),
       _ => throw Exception('Implement screen for game state: ${game.state}'),
     };
@@ -251,5 +255,28 @@ class GameFirstMoveScreen extends StatelessWidget {
             }),
       ],
     );
+  }
+}
+
+class GameInProgressScreen extends StatelessWidget {
+  final ValueChanged<Map<String, String>> onPieceMove;
+  final Game game;
+
+  GameInProgressScreen({
+    required this.onPieceMove,
+    required this.game,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Board(
+      onPieceMove: (data) => _handlePieceMove(context, data),
+      currentFEN: game.fen,
+    );
+  }
+
+  void _handlePieceMove(BuildContext context, Map<String, String> data) {
+    // Do any additional data formatting and validation here
+    onPieceMove(data);
   }
 }

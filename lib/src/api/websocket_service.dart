@@ -30,22 +30,39 @@ class WebsocketService {
   }
 
   void joinGame() {
-    final message = '{"t": "join"}';
-    send(message);
+    final data = {'t': 'join'};
+    send(jsonEncode(data));
+  }
+
+  void makeFirstMove(Map moveData) {
+    final data = {
+      't': 'first_move',
+      'd': moveData,
+    };
+    send(jsonEncode(data));
   }
 
   void movePiece(Map moveData) {
-    final message = '{"t": "move", "d": ${json.encode(moveData)}}';
-    send(message);
+    final data = {
+      't': 'move',
+      'd': moveData,
+    };
+    send(jsonEncode(data));
   }
 
   void acceptFirstMove() {
-    final message = '{"t": "first_move", "d": "accept"}';
-    send(message);
+    final data = {
+      't': 'first_move_choice',
+      'd': 'accept',
+    };
+    send(jsonEncode(data));
   }
 
   void rejectFirstMove() {
-    final message = '{"t": "first_move", "d": "reject"}';
-    send(message);
+    final data = {
+      't': 'first_move_choice',
+      'd': 'reject',
+    };
+    send(jsonEncode(data));
   }
 }
