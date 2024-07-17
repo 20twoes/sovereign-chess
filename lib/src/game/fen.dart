@@ -65,6 +65,7 @@ String getPieceKey(Piece piece) {
 final startIndex = -2;
 const chunkLength = 2;
 
+// Consume a string two chars at a time
 class FENTokenIterator implements Iterator<String> {
   final FEN fen;
   int index = startIndex;

@@ -26,7 +26,7 @@ final files = File.values.map((f) => f.name);
 
 final ranks = List<String>.generate(
   16,
-  (int index) => '${index + 1}',
+  (int index) => (index + 1).toString().padLeft(2, '0'),
   growable: false,
 );
 

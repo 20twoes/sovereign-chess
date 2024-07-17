@@ -9,29 +9,29 @@ import 'square.dart';
 import 'square_key.dart' as sk;
 
 final coloredSquares = {
-  'h9': colors.whiteSquare,
-  'i8': colors.whiteSquare,
-  'h8': colors.blackSquare,
-  'i9': colors.blackSquare,
-  'g7': colors.ashSquare,
+  'h09': colors.whiteSquare,
+  'i08': colors.whiteSquare,
+  'h08': colors.blackSquare,
+  'i09': colors.blackSquare,
+  'g07': colors.ashSquare,
   'j10': colors.ashSquare,
   'g10': colors.slateSquare,
-  'j7': colors.slateSquare,
+  'j07': colors.slateSquare,
   'h11': colors.pinkSquare,
-  'i6': colors.pinkSquare,
+  'i06': colors.pinkSquare,
   'e12': colors.redSquare,
-  'l5': colors.redSquare,
-  'f9': colors.orangeSquare,
-  'k8': colors.orangeSquare,
+  'l05': colors.redSquare,
+  'f09': colors.orangeSquare,
+  'k08': colors.orangeSquare,
   'f11': colors.yellowSquare,
-  'k6': colors.yellowSquare,
-  'f6': colors.greenSquare,
+  'k06': colors.yellowSquare,
+  'f06': colors.greenSquare,
   'k11': colors.greenSquare,
-  'f8': colors.cyanSquare,
-  'k9': colors.cyanSquare,
-  'e5': colors.navySquare,
+  'f08': colors.cyanSquare,
+  'k09': colors.cyanSquare,
+  'e05': colors.navySquare,
   'l12': colors.navySquare,
-  'h6': colors.violetSquare,
+  'h06': colors.violetSquare,
   'i11': colors.violetSquare,
 };
 
@@ -49,12 +49,17 @@ Color getBackgroundColor(row, col, name) {
   return bgColor as Color;
 }
 
+String _parseFen(String fen) {
+  // Only interested in the first field which contains the piece placements (board FEN)
+  return fen.split(' ')[0];
+}
+
 class StaticBoard extends StatelessWidget {
   final String fenStr;
   late plib.Pieces _pieces;
 
   StaticBoard({super.key, required this.fenStr}) {
-    _pieces = fen.read(fenStr);
+    _pieces = fen.read(_parseFen(fenStr));
   }
 
   @override

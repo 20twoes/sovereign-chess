@@ -76,6 +76,11 @@ class Game {
   //}
 }
 
+String _parseFen(String fen) {
+  // Only interested in the first field which contains the piece placements (board FEN)
+  return fen.split(' ')[0];
+}
+
 class Move {
   final String fen;
   final int activePlayer;
@@ -87,10 +92,11 @@ class Move {
     return switch (json) {
       {
         'fen': String fen,
+        // TODO: Do we need the rest of these fields?
         'active_player': int activePlayer,
         'ply': int ply,
       } =>
-        Move(fen: fen, activePlayer: activePlayer, ply: ply),
+        Move(fen: _parseFen(fen), activePlayer: activePlayer, ply: ply),
       _ => throw const FormatException('Failed to load move'),
     };
   }
