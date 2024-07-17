@@ -187,7 +187,6 @@ class _BoardState extends State<Board> {
       print('$piece from $_movingSquare to $squareKey');
       print('Updated FEN: $newFEN');
       final moveData = {
-        'fen': newFEN,
         'san': '${piece.notation}$_movingSquare$squareKey',
       };
       widget.onPieceMove(moveData);
