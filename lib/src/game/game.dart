@@ -62,18 +62,6 @@ class Game {
   bool userCreatedGame(String userId) {
     return userId == player1;
   }
-
-  //bool isPlayersTurn(String userId) {
-  //  final lastMove = moves.last;
-  //  switch (lastMove.activePlayer) {
-  //    case 1:
-  //      return userId == player1;
-  //    case 2:
-  //      return userId == player2;
-  //    default:
-  //      throw Exception("activePlayer not recognized");
-  //  }
-  //}
 }
 
 String _parseFen(String fen) {
@@ -83,20 +71,15 @@ String _parseFen(String fen) {
 
 class Move {
   final String fen;
-  final int activePlayer;
-  final int ply;
 
-  Move({required this.fen, required this.activePlayer, required this.ply});
+  Move({required this.fen});
 
   factory Move.fromJson(Map<String, dynamic> json) {
     return switch (json) {
       {
         'fen': String fen,
-        // TODO: Do we need the rest of these fields?
-        'active_player': int activePlayer,
-        'ply': int ply,
       } =>
-        Move(fen: _parseFen(fen), activePlayer: activePlayer, ply: ply),
+        Move(fen: _parseFen(fen)),
       _ => throw const FormatException('Failed to load move'),
     };
   }
