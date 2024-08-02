@@ -35,6 +35,29 @@ final coloredSquares = {
   'i11': colors.violetSquare,
 };
 
+final promotionSquares = Set.unmodifiable(<String>{
+  'g07',
+  'h07',
+  'i07',
+  'j07',
+  'g08',
+  'h08',
+  'i08',
+  'j08',
+  'g09',
+  'h09',
+  'i09',
+  'j09',
+  'g10',
+  'h10',
+  'i10',
+  'j10',
+});
+
+bool _isPromotionSquare(String square) {
+  return promotionSquares.contains(square);
+}
+
 Color getBackgroundColor(row, col, name) {
   var bgColor = coloredSquares[name];
 
@@ -122,14 +145,16 @@ class StaticBoard extends StatelessWidget {
 }
 
 class Board extends StatefulWidget {
-  final ValueChanged<Map<String, String>> onPieceMove;
+  final ValueChanged<String> onPieceMove;
   final fen.FEN currentFEN;
+  final Function? onPromotion;
   late plib.Pieces _pieces;
 
   Board({
     super.key,
     required this.onPieceMove,
     required this.currentFEN,
+    this.onPromotion,
   }) : _pieces = fen.read(currentFEN);
 
   @override
@@ -181,15 +206,20 @@ class _BoardState extends State<Board> {
         print('$piece from $_movingSquare to $squareKey - same square');
         return;
       }
+
       widget._pieces.remove(_movingSquare);
       widget._pieces[squareKey] = piece;
-      final newFEN = fen.write(widget._pieces);
-      print('$piece from $_movingSquare to $squareKey');
-      print('Updated FEN: $newFEN');
-      final moveData = {
-        'san': '${piece.notation}$_movingSquare$squareKey',
-      };
-      widget.onPieceMove(moveData);
+      final san = '${piece.notation}$_movingSquare$squareKey';
+
+      // Check if we're promoting a pawn first
+      if (_isPromotionSquare(squareKey) && piece.role == plib.Role.pawn) {
+        widget.onPromotion?.call(san);
+      } else {
+        //final newFEN = fen.write(widget._pieces);
+        //print('Updated FEN: $newFEN');
+        print('$piece from $_movingSquare to $squareKey');
+        widget.onPieceMove(san);
+      }
     });
   }
 }

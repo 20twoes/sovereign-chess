@@ -5,6 +5,7 @@ import 'package:provider/provider.dart' show Provider;
 
 import '../api/websocket_service.dart' show WebsocketService;
 import '../game/game.dart' show Board, FEN, Game, GameState;
+import '../game/piece.dart' show Role, roleNotations;
 import '../user.dart' show UserModel;
 import 'scaffold.dart' show AppScaffold;
 
@@ -188,9 +189,9 @@ class GameAcceptedScreen extends StatelessWidget {
     );
   }
 
-  void _handlePieceMove(BuildContext context, Map<String, String> data) {
+  void _handlePieceMove(BuildContext context, String san) {
     // Do any additional data formatting and validation here
-    onPieceMove(data);
+    onPieceMove(buildWebsocketMessage(san));
   }
 }
 
@@ -258,7 +259,7 @@ class GameFirstMoveScreen extends StatelessWidget {
   }
 }
 
-class GameInProgressScreen extends StatelessWidget {
+class GameInProgressScreen extends StatefulWidget {
   final ValueChanged<Map<String, String>> onPieceMove;
   final Game game;
 
@@ -268,15 +269,69 @@ class GameInProgressScreen extends StatelessWidget {
   });
 
   @override
+  State<GameInProgressScreen> createState() => _GameInProgressScreenState();
+}
+
+class _GameInProgressScreenState extends State<GameInProgressScreen> {
+  bool _showPromotionDialog = false;
+  String? _promotionSAN;
+
+  @override
   Widget build(BuildContext context) {
-    return Board(
-      onPieceMove: (data) => _handlePieceMove(context, data),
-      currentFEN: game.fen,
+    return Stack(
+      children: <Widget>[
+        Board(
+          onPieceMove: (data) => _handlePieceMove(context, data),
+          currentFEN: widget.game.fen,
+          onPromotion: _handlePromotion,
+        ),
+        if (_showPromotionDialog) _promotionDialog(),
+      ],
     );
   }
 
-  void _handlePieceMove(BuildContext context, Map<String, String> data) {
+  void _handlePieceMove(BuildContext context, String san) {
     // Do any additional data formatting and validation here
-    onPieceMove(data);
+    widget.onPieceMove(buildWebsocketMessage(san));
   }
+
+  void _handlePromotion(String san) {
+    setState(() {
+      _showPromotionDialog = true;
+      _promotionSAN = san;
+    });
+  }
+
+  Widget _promotionDialog() {
+    final roles = <Role>[
+      Role.queen,
+      Role.king,
+      Role.knight,
+      Role.rook,
+      Role.bishop,
+    ];
+
+    return AlertDialog(
+      content: Text('Promote pawn to:'),
+      actions: roles
+          .map((role) => TextButton(
+                child: Text("${role.name}"),
+                onPressed: () {
+                  setState(() {
+                    _showPromotionDialog = false;
+                    final san = "${_promotionSAN}=${roleNotations[role]}";
+                    print(san);
+                    widget.onPieceMove(buildWebsocketMessage(san));
+                  });
+                },
+              ))
+          .toList(),
+    );
+  }
+}
+
+Map<String, String> buildWebsocketMessage(String san) {
+  return {
+    'san': san,
+  };
 }
