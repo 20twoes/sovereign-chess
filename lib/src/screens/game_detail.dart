@@ -6,6 +6,7 @@ import 'package:provider/provider.dart' show Provider;
 import '../api/websocket_service.dart' show WebsocketService;
 import '../game/game.dart' show Board, FEN, Game, GameState;
 import '../game/piece.dart' show Role, roleNotations;
+import '../game/piece.dart' as piece_lib;
 import '../user.dart' show UserModel;
 import 'scaffold.dart' show AppScaffold;
 
@@ -79,23 +80,11 @@ class _GameDataState extends State<GameData> {
 
     if (error != null) {
       // Don't update the board.  Show previous board state, along with error message.
-      return Stack(
-        children: <Widget>[
-          _getScreen(_gameCache as Game),
-          Container(
-            child: Text(
-              error,
-              style: TextStyle(color: Colors.white),
-            ),
-            decoration: BoxDecoration(color: Colors.red.withOpacity(0.8)),
-            padding: const EdgeInsets.all(4),
-          ),
-        ],
-      );
+      return _getScreen(_gameCache as Game, error);
     } else {
       final game = Game.fromJson(json);
       _gameCache = game;
-      return _getScreen(game);
+      return _getScreen(game, null);
     }
   }
 
@@ -103,7 +92,7 @@ class _GameDataState extends State<GameData> {
     return json['message'];
   }
 
-  Widget _getScreen(Game game) {
+  Widget _getScreen(Game game, String? error) {
     return switch (game.state) {
       GameState.Created => GameCreatedScreen(
           game: game,
@@ -117,10 +106,13 @@ class _GameDataState extends State<GameData> {
           game: game,
           onAcceptFirstMove: _wss!.acceptFirstMove,
           onRejectFirstMove: _wss!.rejectFirstMove,
+          error: error,
         ),
       GameState.InProgress => GameInProgressScreen(
           game: game,
+          error: error,
           onPieceMove: _wss!.movePiece,
+          onDefection: _wss!.defect,
         ),
       _ => throw Exception('Implement screen for game state: ${game.state}'),
     };
@@ -183,7 +175,7 @@ class GameAcceptedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Board(
+    return BoardWrapper(
       onPieceMove: (data) => _handlePieceMove(context, data),
       currentFEN: game.fen,
     );
@@ -199,11 +191,13 @@ class GameFirstMoveScreen extends StatelessWidget {
   final Game game;
   final void Function() onAcceptFirstMove;
   final void Function() onRejectFirstMove;
+  final String? error;
 
   GameFirstMoveScreen({
     required this.game,
     required this.onAcceptFirstMove,
     required this.onRejectFirstMove,
+    this.error,
   });
 
   @override
@@ -218,9 +212,10 @@ class GameFirstMoveScreen extends StatelessWidget {
 
     return Stack(
       children: <Widget>[
-        Board(
+        BoardWrapper(
           onPieceMove: (data) => null,
           currentFEN: game.fen,
+          error: error,
         ),
         if (isPlayer1) _getPlayer1Dialog(),
         if (!isPlayer1) _getPlayer2Dialog(),
@@ -260,12 +255,16 @@ class GameFirstMoveScreen extends StatelessWidget {
 }
 
 class GameInProgressScreen extends StatefulWidget {
-  final ValueChanged<Map<String, String>> onPieceMove;
   final Game game;
+  final String? error;
+  final ValueChanged<Map<String, String>> onPieceMove;
+  final void Function(String) onDefection;
 
   GameInProgressScreen({
-    required this.onPieceMove,
     required this.game,
+    this.error,
+    required this.onPieceMove,
+    required this.onDefection,
   });
 
   @override
@@ -280,16 +279,19 @@ class _GameInProgressScreenState extends State<GameInProgressScreen> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        Board(
-          onPieceMove: (data) => _handlePieceMove(context, data),
+        BoardWrapper(
           currentFEN: widget.game.fen,
+          error: widget.error,
+          onPieceMove: (data) => _handlePieceMove(context, data),
           onPromotion: _handlePromotion,
+          onDefection: widget.onDefection,
         ),
         if (_showPromotionDialog) _promotionDialog(),
       ],
     );
   }
 
+  // NOTE: Piece move and promotion handling, could maybe be moved to BoardWrapper
   void _handlePieceMove(BuildContext context, String san) {
     // Do any additional data formatting and validation here
     widget.onPieceMove(buildWebsocketMessage(san));
@@ -334,4 +336,98 @@ Map<String, String> buildWebsocketMessage(String san) {
   return {
     'san': san,
   };
+}
+
+class BoardWrapper extends StatefulWidget {
+  final FEN currentFEN;
+  final String? error;
+  final ValueChanged<String> onPieceMove;
+  final void Function(String)? onPromotion;
+  final void Function(String)? onDefection;
+
+  BoardWrapper({
+    required this.currentFEN,
+    this.error,
+    required this.onPieceMove,
+    this.onPromotion,
+    this.onDefection,
+  });
+
+  @override
+  State<BoardWrapper> createState() => _BoardWrapperState();
+}
+
+class _BoardWrapperState extends State<BoardWrapper> {
+  bool _showDefectionDialog = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomScrollView(
+      slivers: <Widget>[
+        SliverList(
+          delegate: SliverChildListDelegate(
+            <Widget>[
+              if (widget.error != null)
+                Container(
+                  child: Text(
+                    widget.error as String,
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  decoration: BoxDecoration(color: Colors.red.withOpacity(0.8)),
+                  padding: const EdgeInsets.all(4),
+                ),
+            ],
+          ),
+        ),
+        Board(
+          currentFEN: widget.currentFEN,
+          onPieceMove: widget.onPieceMove,
+          onPromotion: widget.onPromotion,
+        ),
+        SliverList(
+          delegate: SliverChildListDelegate(
+            <Widget>[
+              if (!_showDefectionDialog && widget.onDefection != null)
+                Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: TextButton(
+                    child: const Text("Defect"),
+                    onPressed: () {
+                      setState(() {
+                        _showDefectionDialog = true;
+                      });
+                    },
+                  ),
+                ),
+              if (_showDefectionDialog) _DefectionDialog(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _DefectionDialog() {
+    return AlertDialog(
+      content: Text('Defect to (Change King to):'),
+      actions: <Widget>[
+        ...piece_lib.Color.values.map((color) => TextButton(
+              child: Text("${color.name}"),
+              onPressed: () {
+                _showDefectionDialog = false;
+                widget.onDefection
+                    ?.call(piece_lib.colorNotations[color] as String);
+              },
+            )),
+        TextButton(
+          child: const Text("Cancel"),
+          onPressed: () {
+            setState(() {
+              _showDefectionDialog = false;
+            });
+          },
+        ),
+      ],
+    );
+  }
 }

@@ -167,7 +167,7 @@ class _BoardState extends State<Board> {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.count(
+    return SliverGrid.count(
       crossAxisCount: sk.files.length,
       children: _generateSquares(),
     );

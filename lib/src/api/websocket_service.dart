@@ -21,8 +21,8 @@ class WebsocketService {
 
   Stream get stream => _channel.stream;
 
-  void send(String message) {
-    _channel.sink.add(message);
+  void _send(Map<String, dynamic> data) {
+    _channel.sink.add(jsonEncode(data));
   }
 
   void close() {
@@ -31,7 +31,7 @@ class WebsocketService {
 
   void joinGame() {
     final data = {'t': 'join'};
-    send(jsonEncode(data));
+    _send(data);
   }
 
   void makeFirstMove(Map moveData) {
@@ -39,7 +39,7 @@ class WebsocketService {
       't': 'first_move',
       'd': moveData,
     };
-    send(jsonEncode(data));
+    _send(data);
   }
 
   void movePiece(Map moveData) {
@@ -47,7 +47,7 @@ class WebsocketService {
       't': 'move',
       'd': moveData,
     };
-    send(jsonEncode(data));
+    _send(data);
   }
 
   void acceptFirstMove() {
@@ -55,7 +55,7 @@ class WebsocketService {
       't': 'first_move_choice',
       'd': 'accept',
     };
-    send(jsonEncode(data));
+    _send(data);
   }
 
   void rejectFirstMove() {
@@ -63,6 +63,14 @@ class WebsocketService {
       't': 'first_move_choice',
       'd': 'reject',
     };
-    send(jsonEncode(data));
+    _send(data);
+  }
+
+  void defect(String color) {
+    final data = {
+      't': 'defect',
+      'd': color,
+    };
+    _send(data);
   }
 }
