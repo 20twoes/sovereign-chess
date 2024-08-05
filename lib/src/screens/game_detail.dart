@@ -100,6 +100,7 @@ class _GameDataState extends State<GameData> {
         ),
       GameState.Accepted => GameAcceptedScreen(
           game: game,
+          error: error,
           onPieceMove: _wss!.makeFirstMove,
         ),
       GameState.FirstMove => GameFirstMoveScreen(
@@ -108,7 +109,7 @@ class _GameDataState extends State<GameData> {
           onRejectFirstMove: _wss!.rejectFirstMove,
           error: error,
         ),
-      GameState.InProgress => GameInProgressScreen(
+      GameState.InProgress || GameState.DefectMoveKing => GameInProgressScreen(
           game: game,
           error: error,
           onPieceMove: _wss!.movePiece,
@@ -167,10 +168,12 @@ class GameCreatedScreen extends StatelessWidget {
 class GameAcceptedScreen extends StatelessWidget {
   final ValueChanged<Map<String, String>> onPieceMove;
   final Game game;
+  final String? error;
 
   GameAcceptedScreen({
     required this.onPieceMove,
     required this.game,
+    this.error,
   });
 
   @override
@@ -178,6 +181,7 @@ class GameAcceptedScreen extends StatelessWidget {
     return BoardWrapper(
       onPieceMove: (data) => _handlePieceMove(context, data),
       currentFEN: game.fen,
+      error: error,
     );
   }
 
