@@ -172,10 +172,10 @@ enum Square {
   D7,
   E7,
   F7,
-  G7,
-  H7,
-  I7,
-  J7,
+  G7(isPromotionSquare: true),
+  H7(isPromotionSquare: true),
+  I7(isPromotionSquare: true),
+  J7(isPromotionSquare: true),
   K7,
   L7,
   M7,
@@ -188,10 +188,10 @@ enum Square {
   D8,
   E8,
   F8,
-  G8,
+  G8(isPromotionSquare: true),
   H8,
   I8,
-  J8,
+  J8(isPromotionSquare: true),
   K8,
   L8,
   M8,
@@ -204,10 +204,10 @@ enum Square {
   D9,
   E9,
   F9,
-  G9,
+  G9(isPromotionSquare: true),
   H9,
   I9,
-  J9,
+  J9(isPromotionSquare: true),
   K9,
   L9,
   M9,
@@ -220,10 +220,10 @@ enum Square {
   D10,
   E10,
   F10,
-  G10,
-  H10,
-  I10,
-  J10,
+  G10(isPromotionSquare: true),
+  H10(isPromotionSquare: true),
+  I10(isPromotionSquare: true),
+  J10(isPromotionSquare: true),
   K10,
   L10,
   M10,
@@ -327,6 +327,12 @@ enum Square {
   O16,
   P16;
 
+  const Square({
+    this.isPromotionSquare = false,
+  });
+
+  final bool isPromotionSquare;
+
   material.Color get backgroundColor {
     var bgColor = coloredSquares[this];
 
@@ -351,8 +357,6 @@ enum Square {
       _ => throw 'Unexpected Square name length',
     };
   }
-
-  bool get isPromotionSquare => _promotionSquares.contains(this);
 }
 
 Iterable<Square> fenIter() {
@@ -402,22 +406,3 @@ final coloredSquares = {
   Square.H6: colors.violetSquare,
   Square.I11: colors.violetSquare,
 };
-
-final _promotionSquares = Set.unmodifiable(<Square>{
-  Square.G7,
-  Square.H7,
-  Square.I7,
-  Square.J7,
-  Square.G8,
-  Square.H8,
-  Square.I8,
-  Square.J8,
-  Square.G9,
-  Square.H9,
-  Square.I9,
-  Square.J9,
-  Square.G10,
-  Square.H10,
-  Square.I10,
-  Square.J10,
-});

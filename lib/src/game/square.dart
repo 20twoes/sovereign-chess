@@ -87,7 +87,7 @@ class _SquareNodeState extends State<SquareNode> {
             ],
           ),
           decoration: BoxDecoration(
-            border: Border.all(width: 0.0, color: Colors.black26),
+            border: _calcBorder(),
             color: backgroundColor,
           ),
         );
@@ -96,6 +96,125 @@ class _SquareNodeState extends State<SquareNode> {
         _handleMoveCompleted(piece);
       },
     );
+  }
+
+  Border _calcBorder() {
+    final defaultLine = BorderSide(width: 0.0, color: Colors.black26);
+    final quadrantLine = BorderSide(width: 4.0, color: Colors.brown);
+    final promotionLine = BorderSide(width: 4.0, color: Colors.black);
+
+    return switch (widget.square) {
+      // Horizontal quadrant boundary
+      sk.Square.A8 ||
+      sk.Square.B8 ||
+      sk.Square.C8 ||
+      sk.Square.D8 ||
+      sk.Square.E8 ||
+      sk.Square.F8 ||
+      sk.Square.K8 ||
+      sk.Square.L8 ||
+      sk.Square.M8 ||
+      sk.Square.N8 ||
+      sk.Square.O8 ||
+      sk.Square.P8 =>
+        Border(
+          top: quadrantLine,
+          right: defaultLine,
+          bottom: defaultLine,
+          left: defaultLine,
+        ),
+      // Vertical quadrant boundary
+      sk.Square.H1 ||
+      sk.Square.H2 ||
+      sk.Square.H3 ||
+      sk.Square.H4 ||
+      sk.Square.H5 ||
+      sk.Square.H6 ||
+      sk.Square.H11 ||
+      sk.Square.H12 ||
+      sk.Square.H13 ||
+      sk.Square.H14 ||
+      sk.Square.H15 ||
+      sk.Square.H16 =>
+        Border(
+          top: defaultLine,
+          right: quadrantLine,
+          bottom: defaultLine,
+          left: defaultLine,
+        ),
+      // Promotion box horizontal lines
+      sk.Square.H7 ||
+      sk.Square.I7 =>
+        Border(
+          top: defaultLine,
+          right: defaultLine,
+          bottom: promotionLine,
+          left: defaultLine,
+        ),
+      sk.Square.H10 ||
+      sk.Square.I10 =>
+        Border(
+          top: promotionLine,
+          right: defaultLine,
+          bottom: defaultLine,
+          left: defaultLine,
+        ),
+      // Promotion box vertical lines
+      sk.Square.G8 ||
+      sk.Square.G9 =>
+        Border(
+          top: defaultLine,
+          right: defaultLine,
+          bottom: defaultLine,
+          left: promotionLine,
+        ),
+      sk.Square.J8 ||
+      sk.Square.J9 =>
+        Border(
+          top: defaultLine,
+          right: promotionLine,
+          bottom: defaultLine,
+          left: defaultLine,
+        ),
+      // NW corner
+      sk.Square.G10 =>
+        Border(
+          top: promotionLine,
+          right: defaultLine,
+          bottom: defaultLine,
+          left: promotionLine,
+        ),
+      // NE corner
+      sk.Square.J10 =>
+        Border(
+          top: promotionLine,
+          right: promotionLine,
+          bottom: defaultLine,
+          left: defaultLine,
+        ),
+      // SW corner
+      sk.Square.G7 =>
+        Border(
+          top: defaultLine,
+          right: defaultLine,
+          bottom: promotionLine,
+          left: promotionLine,
+        ),
+      // SE corner
+      sk.Square.J7 =>
+        Border(
+          top: defaultLine,
+          right: promotionLine,
+          bottom: promotionLine,
+          left: defaultLine,
+        ),
+      _ => Border(
+          top: defaultLine,
+          right: defaultLine,
+          bottom: defaultLine,
+          left: defaultLine,
+        ),
+    };
   }
 
   void _handleDragStarted() {
