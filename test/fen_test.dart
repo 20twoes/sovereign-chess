@@ -1,23 +1,24 @@
 import 'package:test/test.dart';
 
-import 'package:sovereign_chess/src/fen.dart' as fen;
-import 'package:sovereign_chess/src/piece.dart';
+import 'package:sovereign_chess/src/game/fen.dart' as fen;
+import 'package:sovereign_chess/src/game/piece.dart';
+import 'package:sovereign_chess/src/game/square_key.dart';
 
 void main() {
   group('FEN read', () {
     test('should return pieces with their positions', () {
       final testFEN = 'aq02vr';
       final pieces = fen.read(testFEN);
-      expect(pieces['a16'], Piece(color: Color.ash, role: Role.queen));
-      expect(pieces['b16'], null);
-      expect(pieces['d16'], Piece(color: Color.violet, role: Role.rook));
+      expect(pieces[Square.A16], Piece(color: Color.ash, role: Role.queen));
+      expect(pieces[Square.B16], null);
+      expect(pieces[Square.D16], Piece(color: Color.violet, role: Role.rook));
     });
 
     test('should handle multiple lines', () {
       final testFEN = 'aq15/ar15';
       final pieces = fen.read(testFEN);
-      expect(pieces['a16'], Piece(color: Color.ash, role: Role.queen));
-      expect(pieces['a15'], Piece(color: Color.ash, role: Role.rook));
+      expect(pieces[Square.A16], Piece(color: Color.ash, role: Role.queen));
+      expect(pieces[Square.A15], Piece(color: Color.ash, role: Role.rook));
       expect(pieces.length, 2);
     });
   });
@@ -43,18 +44,19 @@ void main() {
   group('FEN write', () {
     test('should return FEN string', () {
       final pieces = {
-        'a16': Piece(color: Color.ash, role: Role.queen),
+        Square.A16: Piece(color: Color.ash, role: Role.queen),
       };
       final result = fen.write(pieces);
       expect(result, 'aq15/16/16/16/16/16/16/16/16/16/16/16/16/16/16/16');
     });
+
     test('should work for random squares', () {
       final pieces = {
-        'a15': Piece(color: Color.white, role: Role.rook),
-        'c13': Piece(color: Color.white, role: Role.rook),
-        'e13': Piece(color: Color.white, role: Role.rook),
-        'k8': Piece(color: Color.pink, role: Role.bishop),
-        'p1': Piece(color: Color.navy, role: Role.pawn),
+        Square.A15: Piece(color: Color.white, role: Role.rook),
+        Square.C13: Piece(color: Color.white, role: Role.rook),
+        Square.E13: Piece(color: Color.white, role: Role.rook),
+        Square.K8: Piece(color: Color.pink, role: Role.bishop),
+        Square.P1: Piece(color: Color.navy, role: Role.pawn),
       };
       final result = fen.write(pieces);
       expect(result,

@@ -1,7 +1,7 @@
 import 'square_key.dart';
 import 'package:flutter_svg/flutter_svg.dart' as flutter_svg;
 
-typedef Pieces = Map<Key, Piece>;
+typedef Pieces = Map<Square, Piece>;
 
 enum Role {
   bishop,
@@ -9,7 +9,18 @@ enum Role {
   knight,
   pawn,
   queen,
-  rook,
+  rook;
+
+  String get code {
+    return switch (this) {
+      Role.bishop => 'b',
+      Role.king => 'k',
+      Role.knight => 'n',
+      Role.pawn => 'p',
+      Role.queen => 'q',
+      Role.rook => 'r',
+    };
+  }
 }
 
 const roleNotations = {

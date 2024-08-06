@@ -8,70 +8,6 @@ import 'piece.dart' as plib;
 import 'square.dart';
 import 'square_key.dart' as sk;
 
-final coloredSquares = {
-  'h09': colors.whiteSquare,
-  'i08': colors.whiteSquare,
-  'h08': colors.blackSquare,
-  'i09': colors.blackSquare,
-  'g07': colors.ashSquare,
-  'j10': colors.ashSquare,
-  'g10': colors.slateSquare,
-  'j07': colors.slateSquare,
-  'h11': colors.pinkSquare,
-  'i06': colors.pinkSquare,
-  'e12': colors.redSquare,
-  'l05': colors.redSquare,
-  'f09': colors.orangeSquare,
-  'k08': colors.orangeSquare,
-  'f11': colors.yellowSquare,
-  'k06': colors.yellowSquare,
-  'f06': colors.greenSquare,
-  'k11': colors.greenSquare,
-  'f08': colors.cyanSquare,
-  'k09': colors.cyanSquare,
-  'e05': colors.navySquare,
-  'l12': colors.navySquare,
-  'h06': colors.violetSquare,
-  'i11': colors.violetSquare,
-};
-
-final promotionSquares = Set.unmodifiable(<String>{
-  'g07',
-  'h07',
-  'i07',
-  'j07',
-  'g08',
-  'h08',
-  'i08',
-  'j08',
-  'g09',
-  'h09',
-  'i09',
-  'j09',
-  'g10',
-  'h10',
-  'i10',
-  'j10',
-});
-
-bool _isPromotionSquare(String square) {
-  return promotionSquares.contains(square);
-}
-
-Color getBackgroundColor(row, col, name) {
-  var bgColor = coloredSquares[name];
-
-  if (bgColor == null) {
-    if (col % 2 != 0) {
-      bgColor = row % 2 == 0 ? colors.darkSquare : colors.lightSquare;
-    } else {
-      bgColor = row % 2 == 0 ? colors.lightSquare : colors.darkSquare;
-    }
-  }
-
-  return bgColor as Color;
-}
-
 String _parseFen(String fen) {
   // Only interested in the first field which contains the piece placements (board FEN)
   return fen.split(' ')[0];
@@ -87,60 +23,39 @@ class StaticBoard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> squares = _generateSquares();
-    List<List<Widget>> files = _splitIntoFiles(squares);
+    List<Widget> squares = _generateSquares().toList();
+    List<List<Widget>> ranks = List.generate(
+      sk.boardWidth,
+      (i) => squares.sublist(
+        (i * sk.boardWidth),
+        (i * sk.boardWidth) + sk.boardWidth,
+      ),
+      growable: false,
+    );
 
-    return Row(
-      children: <Widget>[
-        for (final file in files)
-          Column(
-            children: file.reversed.toList(),
-          ),
-      ],
+    // NOTE: Can't seem to use GridView here
+    return Column(
+      children: ranks
+          .map((rank) => Row(
+                children: rank
+                    .map(
+                      (sq) => sq,
+                    )
+                    .toList(),
+              ))
+          .toList(),
     );
   }
 
-  List<Widget> _generateSquares() {
-    List<Widget> squares = [];
-    var isLightColorSquare = false;
+  Iterable<Widget> _generateSquares() {
+    return sk.fenIter().map((sq) {
+      plib.Piece? piece = _pieces[sq];
 
-    Color getColor(String key) {
-      final color = isLightColorSquare ? colors.lightSquare : colors.darkSquare;
-      return color as Color;
-    }
-
-    final lastRank = sk.rowLength.toString();
-
-    for (final key in sk.allKeys) {
-      plib.Piece? piece = _pieces[key];
-      Color color = coloredSquares[key] ?? getColor(key);
-
-      // When we get to the end of a file, don't change colors
-      if (!key.endsWith(lastRank)) {
-        isLightColorSquare = !isLightColorSquare;
-      }
-
-      squares.add(StaticSquareNode(
-        color: color,
+      return StaticSquareNode(
+        color: sq.backgroundColor,
         piece: piece,
-      ));
-    }
-
-    return squares;
-  }
-
-  List<List<Widget>> _splitIntoFiles(List<Widget> squares) {
-    List<Widget> copy = List.from(squares);
-    var files = <List<Widget>>[];
-    final colLen = sk.rowLength;
-
-    while (copy.length > 0) {
-      Iterable<Widget> file = copy.take(colLen);
-      files.add(file.toList());
-      copy.removeRange(0, colLen);
-    }
-
-    return files;
+      );
+    });
   }
 }
 
@@ -163,61 +78,57 @@ class Board extends StatefulWidget {
 
 class _BoardState extends State<Board> {
   final GlobalKey _draggableKey = GlobalKey();
-  sk.Key? _movingSquare;
+  sk.Square? _movingSquare;
 
   @override
   Widget build(BuildContext context) {
     return SliverGrid.count(
-      crossAxisCount: sk.files.length,
+      crossAxisCount: sk.boardWidth,
       children: _generateSquares(),
     );
   }
 
   List<Widget> _generateSquares() {
-    List<Widget> list = [];
+    return sk.fenIter().map((sq) {
+      plib.Piece? piece = widget._pieces[sq];
 
-    for (final (rankIndex, rank) in sk.ranks.reversed.indexed) {
-      for (var (fileIndex, file) in sk.files.indexed) {
-        final name = '${file}${rank}';
-        plib.Piece? piece = widget._pieces[name];
-
-        list.add(SquareNode(
-          name: name,
-          color: getBackgroundColor(rankIndex, fileIndex, name),
-          piece: piece,
-          dragKey: _draggableKey,
-          onMoveCompleted: _handleMoveCompleted,
-          onMoveStarted: _handleMoveStarted,
-        ));
-      }
-    }
-    return list;
+      return SquareNode(
+        square: sq,
+        name: sq.name,
+        color: sq.backgroundColor,
+        piece: piece,
+        dragKey: _draggableKey,
+        onMoveCompleted: _handleMoveCompleted,
+        onMoveStarted: _handleMoveStarted,
+      );
+    }).toList();
   }
 
-  void _handleMoveStarted(sk.Key squareKey) {
+  void _handleMoveStarted(sk.Square square) {
     setState(() {
-      _movingSquare = squareKey;
+      _movingSquare = square;
     });
   }
 
-  void _handleMoveCompleted(plib.Piece piece, sk.Key squareKey) {
+  void _handleMoveCompleted(plib.Piece piece, sk.Square square) {
     setState(() {
-      if (_movingSquare == squareKey) {
-        print('$piece from $_movingSquare to $squareKey - same square');
+      if (_movingSquare == square) {
+        print(
+            '$piece from ${_movingSquare!.name} to ${square.name} - same square');
         return;
       }
 
       widget._pieces.remove(_movingSquare);
-      widget._pieces[squareKey] = piece;
-      final san = '${piece.notation}$_movingSquare$squareKey';
+      widget._pieces[square] = piece;
+      final san = '${piece.notation}${_movingSquare!.sanName}${square.sanName}';
 
       // Check if we're promoting a pawn first
-      if (_isPromotionSquare(squareKey) && piece.role == plib.Role.pawn) {
+      if (square.isPromotionSquare && piece.role == plib.Role.pawn) {
         widget.onPromotion?.call(san);
       } else {
         //final newFEN = fen.write(widget._pieces);
         //print('Updated FEN: $newFEN');
-        print('$piece from $_movingSquare to $squareKey');
+        print('$piece from $_movingSquare to ${square.name}');
         widget.onPieceMove(san);
       }
     });

@@ -49,17 +49,8 @@ const letterToRoles = {
   'r': Role.rook,
 };
 
-const roleToLetters = {
-  Role.bishop: 'b',
-  Role.king: 'k',
-  Role.knight: 'n',
-  Role.pawn: 'p',
-  Role.queen: 'q',
-  Role.rook: 'r',
-};
-
 String getPieceKey(Piece piece) {
-  return colorToLetters[piece.color]! + roleToLetters[piece.role]!;
+  return colorToLetters[piece.color]! + piece.role.code;
 }
 
 final startIndex = -2;
@@ -106,13 +97,13 @@ bool isNumeric(String str) {
 }
 
 Pieces read(FEN fen) {
-  final pieces = Map<Key, Piece>();
+  final pieces = Pieces();
   final rows = fen.split('/');
 
   for (final (rowIndex, fenRow) in rows.indexed) {
     final iter = FENTokenIterator(fenRow);
     var col = 0;
-    var row = rowLength - 1 - rowIndex;
+    var row = boardWidth - 1 - rowIndex;
 
     while (iter.moveNext()) {
       final token = iter.current;
@@ -120,8 +111,8 @@ Pieces read(FEN fen) {
         final skippedSquares = int.parse(token);
         col += skippedSquares - 1;
       } else {
-        final key = posToKey(col, row);
-        pieces[key] = parse(token);
+        final square = fromFileAndRankIndex(col, row);
+        pieces[square] = parse(token);
       }
       col++;
     }
@@ -131,11 +122,14 @@ Pieces read(FEN fen) {
 }
 
 FEN write(Pieces pieces) {
-  final rows = ranks.reversed.map((rank) {
-    final tokens = files.map((file) {
-      final piece = pieces[file + rank];
+  final rows = Rank.values.reversed.map((rank) {
+    final tokens = File.values.map((file) {
+      final square = fromFileAndRankIndex(file.index, rank.index);
+      final piece = pieces[square];
+      // Add a `1` for each skipped square
       return piece != null ? getPieceKey(piece) : '1';
     });
+    // Now replace the 1's with the total number of skipped squares
     return tokens.join('').splitMapJoin(
           RegExp(r'1+'),
           onMatch: (m) => '${m[0]!.length}'.padLeft(2, '0'),

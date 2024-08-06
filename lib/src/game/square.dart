@@ -31,15 +31,17 @@ class StaticSquareNode extends StatelessWidget {
 }
 
 class SquareNode extends StatefulWidget {
+  final sk.Square square;
   final Color color;
   final sk.Key name;
   plib.Piece? piece;
   final GlobalKey dragKey;
-  final void Function(plib.Piece, sk.Key) onMoveCompleted;
-  final void Function(sk.Key) onMoveStarted;
+  final void Function(plib.Piece, sk.Square) onMoveCompleted;
+  final void Function(sk.Square) onMoveStarted;
 
   SquareNode({
     super.key,
+    required this.square,
     required this.color,
     required this.name,
     this.piece,
@@ -98,7 +100,7 @@ class _SquareNodeState extends State<SquareNode> {
 
   void _handleDragStarted() {
     //print('${widget.piece} started moving from ${widget.name}');
-    widget.onMoveStarted(widget.name);
+    widget.onMoveStarted(widget.square);
   }
 
   void _handleMoveCompleted(plib.Piece piece) {
@@ -106,7 +108,7 @@ class _SquareNodeState extends State<SquareNode> {
     setState(() {
       widget.piece = piece;
     });
-    widget.onMoveCompleted(piece, widget.name);
+    widget.onMoveCompleted(piece, widget.square);
   }
 }
 
