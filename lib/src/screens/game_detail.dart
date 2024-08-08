@@ -10,6 +10,8 @@ import '../game/piece.dart' as piece_lib;
 import '../user.dart' show UserModel;
 import 'scaffold.dart' show AppScaffold;
 
+const boardMaxWidth = 1000.0;
+
 class GameDetailScreen extends StatelessWidget {
   final String gameId;
 
@@ -366,6 +368,15 @@ class _BoardWrapperState extends State<BoardWrapper> {
 
   @override
   Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        constraints: BoxConstraints(maxWidth: boardMaxWidth),
+        child: _BoardArea(),
+      ),
+    );
+  }
+
+  Widget _BoardArea() {
     return CustomScrollView(
       slivers: <Widget>[
         SliverList(

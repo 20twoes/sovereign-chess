@@ -143,66 +143,54 @@ class _SquareNodeState extends State<SquareNode> {
           left: defaultLine,
         ),
       // Promotion box horizontal lines
-      sk.Square.H7 ||
-      sk.Square.I7 =>
-        Border(
+      sk.Square.H7 || sk.Square.I7 => Border(
           top: defaultLine,
           right: defaultLine,
           bottom: promotionLine,
           left: defaultLine,
         ),
-      sk.Square.H10 ||
-      sk.Square.I10 =>
-        Border(
+      sk.Square.H10 || sk.Square.I10 => Border(
           top: promotionLine,
           right: defaultLine,
           bottom: defaultLine,
           left: defaultLine,
         ),
       // Promotion box vertical lines
-      sk.Square.G8 ||
-      sk.Square.G9 =>
-        Border(
+      sk.Square.G8 || sk.Square.G9 => Border(
           top: defaultLine,
           right: defaultLine,
           bottom: defaultLine,
           left: promotionLine,
         ),
-      sk.Square.J8 ||
-      sk.Square.J9 =>
-        Border(
+      sk.Square.J8 || sk.Square.J9 => Border(
           top: defaultLine,
           right: promotionLine,
           bottom: defaultLine,
           left: defaultLine,
         ),
       // NW corner
-      sk.Square.G10 =>
-        Border(
+      sk.Square.G10 => Border(
           top: promotionLine,
           right: defaultLine,
           bottom: defaultLine,
           left: promotionLine,
         ),
       // NE corner
-      sk.Square.J10 =>
-        Border(
+      sk.Square.J10 => Border(
           top: promotionLine,
           right: promotionLine,
           bottom: defaultLine,
           left: defaultLine,
         ),
       // SW corner
-      sk.Square.G7 =>
-        Border(
+      sk.Square.G7 => Border(
           top: defaultLine,
           right: defaultLine,
           bottom: promotionLine,
           left: promotionLine,
         ),
       // SE corner
-      sk.Square.J7 =>
-        Border(
+      sk.Square.J7 => Border(
           top: defaultLine,
           right: promotionLine,
           bottom: promotionLine,
