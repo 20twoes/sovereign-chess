@@ -2,6 +2,8 @@ import 'package:test/test.dart';
 
 import 'package:sovereign_chess/src/game/fen.dart' as fen;
 import 'package:sovereign_chess/src/game/piece.dart';
+import 'package:sovereign_chess/src/game/player.dart';
+import 'package:sovereign_chess/src/game/position.dart';
 import 'package:sovereign_chess/src/game/square_key.dart';
 
 void main() {
@@ -61,6 +63,26 @@ void main() {
       final result = fen.write(pieces);
       expect(result,
           '16/wr15/16/02wr01wr11/16/16/16/16/10pb05/16/16/16/16/16/16/15np');
+    });
+  });
+
+  group('fenToPosition', () {
+    test('should work', () {
+      final rawFEN =
+          'aqabvrvnbrbnbbbqbkbbbnbrynyrsbsq/aranvpvpbpbpbpbp01bpbpbpypypsnsr/nbnp12opob/nqnp12opoq/crcp12rprr/cncp06bp05rprn/gbgp12pppb/gqgp12pppq/yqyp12vpvq/ybyp12vpvb/onop06wp05npnn/orop12npnr/rqrp12cpcq/rbrp05wp06cpcb/srsnppppwpwpwp02wpwpwpgpgpanar/sqsbprpnwrwnwbwqwkwbwnwrgngrabaq 2 w p b cv 7';
+
+      final result = fen.fenToPosition(rawFEN);
+
+      expect(result.boardFEN,
+          'aqabvrvnbrbnbbbqbkbbbnbrynyrsbsq/aranvpvpbpbpbpbp01bpbpbpypypsnsr/nbnp12opob/nqnp12opoq/crcp12rprr/cncp06bp05rprn/gbgp12pppb/gqgp12pppq/yqyp12vpvq/ybyp12vpvb/onop06wp05npnn/orop12npnr/rqrp12cpcq/rbrp05wp06cpcb/srsnppppwpwpwp02wpwpwpgpgpanar/sqsbprpnwrwnwbwqwkwbwnwrgngrabaq');
+      expect(result.activePlayer, Player.p2);
+      expect(result.ownedArmy(Player.p1), Color.white);
+      expect(result.ownedArmy(Player.p2), Color.black);
+      expect(result.controlledArmies(Player.p1).length, 1);
+      expect(result.controlledArmies(Player.p1).contains(Color.pink), true);
+      expect(result.controlledArmies(Player.p2).length, 2);
+      expect(result.controlledArmies(Player.p2).contains(Color.cyan), true);
+      expect(result.controlledArmies(Player.p2).contains(Color.violet), true);
     });
   });
 }

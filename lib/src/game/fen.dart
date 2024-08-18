@@ -1,4 +1,6 @@
 import 'piece.dart';
+import 'position.dart';
+import 'player.dart';
 import 'square_key.dart';
 
 typedef FEN = String;
@@ -136,4 +138,28 @@ FEN write(Pieces pieces) {
         );
   });
   return rows.join('/');
+}
+
+// Parse full FEN from backend into Position object
+Position fenToPosition(FEN fen) {
+  final parts = fen.split(' ');
+  final boardFEN = parts[0];
+  final activePlayer = parts[1];
+  final p1Owned = parts[2];
+  final p1Controlled = parts[3];
+  final p2Owned = parts[4];
+  final p2Controlled = parts[5];
+
+  final pos =
+      Position(boardFEN: boardFEN, activePlayer: charToPlayer(activePlayer));
+  pos.addOwnedArmy(Player.p1, charToColor(p1Owned));
+  pos.addOwnedArmy(Player.p2, charToColor(p2Owned));
+  p1Controlled
+      .split('')
+      .forEach((ch) => pos.addControlledArmy(Player.p1, charToColor(ch)));
+  p2Controlled
+      .split('')
+      .forEach((ch) => pos.addControlledArmy(Player.p2, charToColor(ch)));
+
+  return pos;
 }

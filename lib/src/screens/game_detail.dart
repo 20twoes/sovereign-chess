@@ -7,6 +7,8 @@ import '../api/websocket_service.dart' show WebsocketService;
 import '../game/game.dart' show Board, FEN, Game, GameState;
 import '../game/piece.dart' show Role, roleNotations;
 import '../game/piece.dart' as piece_lib;
+import '../game/player.dart' show Player;
+import '../game/widgets/status_bar.dart' show StatusBar;
 import '../user.dart' show UserModel;
 import 'scaffold.dart' show AppScaffold;
 
@@ -64,7 +66,8 @@ class _GameDataState extends State<GameData> {
                   child: CircularProgressIndicator(),
                 );
               case ConnectionState.active:
-                return _buildScreen(snapshot.data);
+                final user = Provider.of<UserModel>(context);
+                return _buildScreen(snapshot.data, user);
               case ConnectionState.done:
                 return Text('Connection done/closed');
             }
@@ -74,7 +77,7 @@ class _GameDataState extends State<GameData> {
     );
   }
 
-  Widget _buildScreen(String data) {
+  Widget _buildScreen(String data, UserModel user) {
     final json = jsonDecode(data) as Map<String, dynamic>;
 
     // Check for error messages
@@ -85,6 +88,7 @@ class _GameDataState extends State<GameData> {
       return _getScreen(_gameCache as Game, error);
     } else {
       final game = Game.fromJson(json);
+      game.setPlayer(user);
       _gameCache = game;
       return _getScreen(game, null);
     }
@@ -184,6 +188,7 @@ class GameAcceptedScreen extends StatelessWidget {
       onPieceMove: (data) => _handlePieceMove(context, data),
       currentFEN: game.fen,
       error: error,
+      game: game,
     );
   }
 
@@ -222,6 +227,7 @@ class GameFirstMoveScreen extends StatelessWidget {
           onPieceMove: (data) => null,
           currentFEN: game.fen,
           error: error,
+          game: game,
         ),
         if (isPlayer1) _getPlayer1Dialog(),
         if (!isPlayer1) _getPlayer2Dialog(),
@@ -288,6 +294,7 @@ class _GameInProgressScreenState extends State<GameInProgressScreen> {
         BoardWrapper(
           currentFEN: widget.game.fen,
           error: widget.error,
+          game: widget.game,
           onPieceMove: (data) => _handlePieceMove(context, data),
           onPromotion: _handlePromotion,
           onDefection: widget.onDefection,
@@ -347,6 +354,7 @@ Map<String, String> buildWebsocketMessage(String san) {
 class BoardWrapper extends StatefulWidget {
   final FEN currentFEN;
   final String? error;
+  final Game game;
   final ValueChanged<String> onPieceMove;
   final void Function(String)? onPromotion;
   final void Function(String)? onDefection;
@@ -354,6 +362,7 @@ class BoardWrapper extends StatefulWidget {
   BoardWrapper({
     required this.currentFEN,
     this.error,
+    required this.game,
     required this.onPieceMove,
     this.onPromotion,
     this.onDefection,
@@ -391,6 +400,7 @@ class _BoardWrapperState extends State<BoardWrapper> {
                   decoration: BoxDecoration(color: Colors.red.withOpacity(0.8)),
                   padding: const EdgeInsets.all(4),
                 ),
+              _PlayerBar(Player.p2),
             ],
           ),
         ),
@@ -402,6 +412,7 @@ class _BoardWrapperState extends State<BoardWrapper> {
         SliverList(
           delegate: SliverChildListDelegate(
             <Widget>[
+              _PlayerBar(Player.p1),
               if (!_showDefectionDialog && widget.onDefection != null)
                 Padding(
                   padding: EdgeInsets.all(16.0),
@@ -419,6 +430,13 @@ class _BoardWrapperState extends State<BoardWrapper> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _PlayerBar(Player player) {
+    return Padding(
+      padding: EdgeInsets.all(8.0),
+      child: StatusBar(game: widget.game, player: player),
     );
   }
 

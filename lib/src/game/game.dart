@@ -1,7 +1,12 @@
 import 'board.dart';
+import 'fen.dart' show fenToPosition;
+import 'piece.dart' show Color;
+import 'player.dart' show Player;
+import 'position.dart' show Position;
+import '../user.dart' show UserModel;
 
 export 'board.dart';
-export 'fen.dart' show FEN, initialFEN;
+export 'fen.dart' show FEN;
 
 typedef Games = List<Game>;
 
@@ -28,6 +33,8 @@ class Game {
   final GameState state;
   final String player1;
   final String? player2;
+  late Player?
+      currentPlayer; // enum denoting which player the logged in user is
   List<Move> moves;
 
   Game({
@@ -60,8 +67,24 @@ class Game {
 
   String get fen => moves.last.fen;
 
+  Position currentPosition() {
+    return fenToPosition(moves.last.rawFEN);
+  }
+
   bool userCreatedGame(String userId) {
     return userId == player1;
+  }
+
+  void setPlayer(UserModel user) {
+    if (user?.id == this.player1) {
+      this.currentPlayer = Player.p1;
+    } else if (user?.id == this.player2) {
+      this.currentPlayer = Player.p2;
+    }
+  }
+
+  DateTime timeSinceLastMove() {
+    return moves.last.timestamp;
   }
 }
 
@@ -70,18 +93,30 @@ String _parseFen(String fen) {
   return fen.split(' ')[0];
 }
 
+DateTime _parseTimestamp(Map<String, dynamic> json) {
+  final ms = json[r"$date"]?[r"$numberLong"];
+  return DateTime.fromMillisecondsSinceEpoch(int.parse(ms), isUtc: true);
+}
+
 class Move {
   final String fen;
+  final String rawFEN;
+  final DateTime timestamp;
 
-  Move({required this.fen});
+  Move({required this.fen, required this.rawFEN, required this.timestamp});
 
   factory Move.fromJson(Map<String, dynamic> json) {
     return switch (json) {
       {
         'fen': String fen,
+        'ts': Map<String, dynamic> ts,
       } =>
-        Move(fen: _parseFen(fen)),
-      _ => throw const FormatException('Failed to load move'),
+        Move(
+          fen: _parseFen(fen),
+          rawFEN: fen,
+          timestamp: _parseTimestamp(ts),
+        ),
+      _ => throw const FormatException('Failed to parse Move'),
     };
   }
 }

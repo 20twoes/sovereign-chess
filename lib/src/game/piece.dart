@@ -62,6 +62,25 @@ const colorNotations = {
   Color.yellow: 'Y',
 };
 
+Color? charToColor(String ch) {
+  return switch (ch) {
+    'a' => Color.ash,
+    'b' => Color.black,
+    'c' => Color.cyan,
+    'g' => Color.green,
+    'n' => Color.navy,
+    'o' => Color.orange,
+    'p' => Color.pink,
+    'r' => Color.red,
+    's' => Color.slate,
+    'v' => Color.violet,
+    'w' => Color.white,
+    'y' => Color.yellow,
+    '-' => null,
+    _ => throw Exception('Invalid Color char code')
+  };
+}
+
 class Piece {
   final Color color;
   final Role role;
