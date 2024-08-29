@@ -12,7 +12,8 @@ import '../game/widgets/status_bar.dart' show StatusBar;
 import '../user.dart' show UserModel;
 import 'scaffold.dart' show AppScaffold;
 
-const boardMaxWidth = 1000.0;
+const boardMaxWidth =
+    674.0; // This is just the max before we get a render overflow error
 
 class GameDetailScreen extends StatelessWidget {
   final String gameId;
@@ -378,56 +379,98 @@ class _BoardWrapperState extends State<BoardWrapper> {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Container(
-        constraints: BoxConstraints(maxWidth: boardMaxWidth),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: boardMaxWidth),
         child: _BoardArea(),
       ),
     );
   }
 
   Widget _BoardArea() {
-    return CustomScrollView(
-      slivers: <Widget>[
-        SliverList(
-          delegate: SliverChildListDelegate(
-            <Widget>[
-              if (widget.error != null)
-                Container(
-                  child: Text(
-                    widget.error as String,
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  decoration: BoxDecoration(color: Colors.red.withOpacity(0.8)),
-                  padding: const EdgeInsets.all(4),
+    return Column(
+      children: <Widget>[
+        Column(
+          children: <Widget>[
+            if (widget.error != null)
+              Container(
+                child: Text(
+                  widget.error as String,
+                  style: TextStyle(color: Colors.white),
                 ),
-              _PlayerBar(Player.p2),
-            ],
+                decoration: BoxDecoration(color: Colors.red.withOpacity(0.8)),
+                padding: const EdgeInsets.all(4),
+              ),
+            _PlayerBar(Player.p2),
+          ],
+        ),
+        Expanded(
+          child: Board(
+            currentFEN: widget.currentFEN,
+            onPieceMove: widget.onPieceMove,
+            onPromotion: widget.onPromotion,
           ),
+        ),
+        Column(
+          children: <Widget>[
+            _PlayerBar(Player.p1),
+            if (!_showDefectionDialog && widget.onDefection != null)
+              Padding(
+                padding: EdgeInsets.all(16.0),
+                child: TextButton(
+                  child: const Text("Defect"),
+                  onPressed: () {
+                    setState(() {
+                      _showDefectionDialog = true;
+                    });
+                  },
+                ),
+              ),
+            if (_showDefectionDialog) _DefectionDialog(),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _BoardAreaOld() {
+    return ListView(
+      children: <Widget>[
+        Column(
+          children: <Widget>[
+            if (widget.error != null)
+              Container(
+                child: Text(
+                  widget.error as String,
+                  style: TextStyle(color: Colors.white),
+                ),
+                decoration: BoxDecoration(color: Colors.red.withOpacity(0.8)),
+                padding: const EdgeInsets.all(4),
+              ),
+            _PlayerBar(Player.p2),
+          ],
         ),
         Board(
           currentFEN: widget.currentFEN,
           onPieceMove: widget.onPieceMove,
           onPromotion: widget.onPromotion,
         ),
-        SliverList(
-          delegate: SliverChildListDelegate(
-            <Widget>[
-              _PlayerBar(Player.p1),
-              if (!_showDefectionDialog && widget.onDefection != null)
-                Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: TextButton(
-                    child: const Text("Defect"),
-                    onPressed: () {
-                      setState(() {
-                        _showDefectionDialog = true;
-                      });
-                    },
-                  ),
+        Column(
+          children: <Widget>[
+            _PlayerBar(Player.p1),
+            if (!_showDefectionDialog && widget.onDefection != null)
+              Padding(
+                padding: EdgeInsets.all(16.0),
+                child: TextButton(
+                  child: const Text("Defect"),
+                  onPressed: () {
+                    setState(() {
+                      _showDefectionDialog = true;
+                    });
+                  },
                 ),
-              if (_showDefectionDialog) _DefectionDialog(),
-            ],
-          ),
+              ),
+            if (_showDefectionDialog) _DefectionDialog(),
+          ],
         ),
       ],
     );

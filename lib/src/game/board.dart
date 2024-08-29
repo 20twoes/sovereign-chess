@@ -33,7 +33,6 @@ class StaticBoard extends StatelessWidget {
       growable: false,
     );
 
-    // NOTE: Can't seem to use GridView here
     return Column(
       children: ranks
           .map((rank) => Row(
@@ -82,26 +81,45 @@ class _BoardState extends State<Board> {
 
   @override
   Widget build(BuildContext context) {
-    return SliverGrid.count(
-      crossAxisCount: sk.boardWidth,
-      children: _generateSquares(),
+    return InteractiveViewer(
+      child: _NonScrollableBoard(),
     );
   }
 
-  List<Widget> _generateSquares() {
+  Widget _NonScrollableBoard() {
+    return Column(
+      children: rowIter()
+          .map(
+            (row) => Row(children: row.toList()),
+          )
+          .toList(),
+    );
+  }
+
+  Iterable<Widget> _squareNodeIter() {
     return sk.fenIter().map((sq) {
       plib.Piece? piece = widget._pieces[sq];
 
-      return SquareNode(
-        square: sq,
-        name: sq.name,
-        color: sq.backgroundColor,
-        piece: piece,
-        dragKey: _draggableKey,
-        onMoveCompleted: _handleMoveCompleted,
-        onMoveStarted: _handleMoveStarted,
+      return Expanded(
+        child: SquareNode(
+          square: sq,
+          name: sq.name,
+          color: sq.backgroundColor,
+          piece: piece,
+          dragKey: _draggableKey,
+          onMoveCompleted: _handleMoveCompleted,
+          onMoveStarted: _handleMoveStarted,
+        ),
       );
-    }).toList();
+    });
+  }
+
+  // Return a row of squares starting from the top of the board (Rank 16).
+  // Used for rendering the board.
+  Iterable<List<Widget>> rowIter() {
+    final squares = _squareNodeIter().toList();
+    return Iterable<int>.generate(sk.boardWidth).map((x) => squares.sublist(
+        x * sk.boardWidth, (x * sk.boardWidth) + sk.boardWidth));
   }
 
   void _handleMoveStarted(sk.Square square) {

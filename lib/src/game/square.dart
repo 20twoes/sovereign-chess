@@ -63,32 +63,35 @@ class _SquareNodeState extends State<SquareNode> {
         final backgroundColor =
             (candidateData.length > 0) ? hoverColor : widget.color;
 
-        return Container(
-          child: Stack(
-            children: [
-              _Label(name: widget.name),
-              if (widget.piece != null)
-                Positioned.fill(
-                  child: Draggable<plib.Piece>(
-                    data: widget.piece,
-                    dragAnchorStrategy: pointerDragAnchorStrategy,
-                    maxSimultaneousDrags: 1,
-                    onDragStarted: _handleDragStarted,
-                    feedback: _DraggingPiece(
-                      dragKey: widget.dragKey,
-                      piece: widget.piece,
-                    ),
-                    childWhenDragging: Container(),
-                    child: Container(
-                      child: _PieceWidget(piece: widget.piece),
+        return AspectRatio(
+          aspectRatio: 1.0,
+          child: Container(
+            child: Stack(
+              children: [
+                _Label(name: widget.name),
+                if (widget.piece != null)
+                  Positioned.fill(
+                    child: Draggable<plib.Piece>(
+                      data: widget.piece,
+                      dragAnchorStrategy: pointerDragAnchorStrategy,
+                      maxSimultaneousDrags: 1,
+                      onDragStarted: _handleDragStarted,
+                      feedback: _DraggingPiece(
+                        dragKey: widget.dragKey,
+                        piece: widget.piece,
+                      ),
+                      childWhenDragging: Container(),
+                      child: Container(
+                        child: _PieceWidget(piece: widget.piece),
+                      ),
                     ),
                   ),
-                ),
-            ],
-          ),
-          decoration: BoxDecoration(
-            border: _calcBorder(),
-            color: backgroundColor,
+              ],
+            ),
+            decoration: BoxDecoration(
+              border: _calcBorder(),
+              color: backgroundColor,
+            ),
           ),
         );
       },
